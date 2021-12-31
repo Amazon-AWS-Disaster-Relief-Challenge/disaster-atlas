@@ -1,0 +1,54 @@
+type IncidentTags @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  label: String
+  Incident: Incident @hasOne
+  Posts: [Post] @manyToMany(relationName: "IncidentTagsPost")
+}
+
+type Comment @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  text: String
+  postID: ID @index(name: "byPost")
+}
+
+enum PostType {
+  TEXT
+  PHOTO
+  VIDEO
+  AUDIO
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  REMOVED
+}
+
+type Post @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String
+  type: PostType
+  likes: Int
+  status: PostStatus
+  email: String
+  username: String
+  incidenttagss: [IncidentTags] @manyToMany(relationName: "IncidentTagsPost")
+  Comments: [Comment] @hasMany(indexName: "byPost", fields: ["id"])
+}
+
+enum IncidentType {
+  FIRE
+  EARTHQUAKE
+  FLOOD
+  TORNADO
+  HURRICANE
+}
+
+type Incident @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String
+  longitude: String
+  latitude: String
+  type: IncidentType
+}
+ 

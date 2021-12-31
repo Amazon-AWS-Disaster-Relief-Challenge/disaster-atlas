@@ -1,20 +1,32 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { Text, View } from "react-native";
+// @ts-ignore
+import { withAuthenticator } from "aws-amplify-react-native";
+import { QueryClient, QueryClientProvider } from "react-query";
 
-export default function App() {
+import config from "./lib/aws-exports";
+import Amplify from "aws-amplify";
+
+Amplify.configure(config);
+
+const queryClient = new QueryClient();
+
+function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app! HI</Text>
-      <StatusBar style="auto" />
-    </View>
+    <QueryClientProvider client={queryClient}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#fff",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text>Open up App.tsx to start working on your adpp! HI</Text>
+        <StatusBar style="auto" />
+      </View>
+    </QueryClientProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default withAuthenticator(App, { usernameAttributes: "email" });
