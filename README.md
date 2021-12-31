@@ -20,5 +20,4 @@ Setup the `dev` Amplify environment
 
 1.  Build for the iOS Simulator: `expo run:ios`
 1.  Run `yarn start --https` and select `ios` or `android`
-
 1.  Install Expo Go on your mobile
