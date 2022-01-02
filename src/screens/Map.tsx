@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
-import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
-import { StyleSheet, View, Dimensions, Platform, Text } from "react-native";
-import { requestForegroundPermissionsAsync, getCurrentPositionAsync, startLocationUpdatesAsync, watchPositionAsync, LocationAccuracy, LocationSubscription } from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
-import { Gyroscope } from 'expo-sensors';
+import { useState, useEffect, useRef } from "react";
+import MapView, { PROVIDER_GOOGLE, AnimatedRegion } from "react-native-maps";
+import { StyleSheet, View, Dimensions, Platform, Text, AppState, AppStateStatus, TouchableHighlight } from "react-native";
+import { requestForegroundPermissionsAsync, getCurrentPositionAsync, watchPositionAsync, LocationAccuracy, LocationSubscription } from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
 
 //https://hpxml.pdc.org/public.xml
 interface UserLoc {
@@ -11,9 +10,10 @@ interface UserLoc {
   longitude: number,
 };
 
-enum Tasks {
-  USER_LOCATION="user-location"
-};
+enum AppMode {
+  ACTIVE="active",
+  INACTIVE="inactive"
+}
 
 export default function Map() {
   return (
@@ -26,53 +26,67 @@ export default function Map() {
 };
 
 const NativeMapView = () => {
-  const DELTA = 0.15;
-  const [delta] = useState(DELTA);
+  const { width, height } = Dimensions.get('window');
+  const ASPECT_RATIO = width / height;
+  const LATITUDE_DELTA = 0.003;  
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  const [latDelta] = useState(LATITUDE_DELTA);
+  const [lngDelta] = useState(LONGITUDE_DELTA);
+  const ANIMATION_DELAY = 7000;
+
+  // App states
+  const appState = useRef(AppState.currentState);
 
   // User Location updates
-  const LOCATION_UPDATES_INTERVAL = 5000;
   const DISTANCE_INTERVAL = 5;
-  const [location, setLocation] = useState({} as UserLoc);
+  const [latLng, setLatLng] = useState({} as UserLoc);
+  const [coordinate, setCoordinate] = useState({} as AnimatedRegion);
+  const mapRef = useRef();
+  const markerRef = useRef();
+
+  const isAppForeground = (nextAppState: AppStateStatus) => {
+    return appState.current.match(/inactive|background/) && nextAppState === AppMode.ACTIVE;
+  };
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    appState.current = nextAppState;
+  };
+
+  const setLocationAndAnimate = (location: UserLoc) => {
+    if (!location) {
+      return;
+    }
+    setLatLng(location);
+    setCoordinate(new AnimatedRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA
+      })
+    );
+    
+    if (Platform.OS == 'android') {
+      if (markerRef && markerRef.current) {
+        //@ts-ignore
+        markerRef.current.animateMarkerToCoordinate(coordinate, ANIMATION_DELAY);
+      }
+    }
+  };
 
   useEffect(() => {
+    // register app state change
+    AppState.addEventListener('change', handleAppStateChange);
+
     let locationSubscription: LocationSubscription;
     const initUserLocAysnc = async () => {
       const foregroundPermissions = await requestForegroundPermissionsAsync();
-      if (foregroundPermissions.status !== 'granted') {
-        return;
-      } else {
-  
-        const initUserLocationBackgroundTask = () => {
-          TaskManager.defineTask(Tasks.USER_LOCATION, ({ data, error }) => {
-            if (error) {
-              // check `error.message` for more details.
-              console.log('error -->', error.message);
-              return;
-            }
-            const location = (data as any).locations.length > 0 ? (data as any).locations[0] : undefined;
-
-            console.log(location);
-            if (location) {
-              setLocation(location);
-            }
-           });
-        };
-    
-        // initialize task manager for location update background task.
-        initUserLocationBackgroundTask();
-  
+      if (foregroundPermissions.status == 'granted') {
         // Get user's current location
         const { coords } = await getCurrentPositionAsync({});
-        setLocation({ longitude: +coords.longitude, latitude: +coords.latitude });
+        setLocationAndAnimate({ longitude: +coords.longitude, latitude: +coords.latitude } as UserLoc);
         // Foreground mode updates
         locationSubscription = await watchPositionAsync({ accuracy: LocationAccuracy.Highest, distanceInterval: DISTANCE_INTERVAL }, locationData => {
-          setLocation({ longitude: +locationData.coords.longitude, latitude: +locationData.coords.latitude });
-        });
-        // Background mode updates
-        startLocationUpdatesAsync(Tasks.USER_LOCATION, { 
-          deferredUpdatesInterval: LOCATION_UPDATES_INTERVAL, 
-          showsBackgroundLocationIndicator: true,
-          distanceInterval: DISTANCE_INTERVAL,
+          isAppForeground(appState.current) && setLocationAndAnimate({ longitude: +locationData.coords.longitude, latitude: +locationData.coords.latitude } as UserLoc);
         });
       }
     };
@@ -80,68 +94,50 @@ const NativeMapView = () => {
     initUserLocAysnc();
 
     return () => {
-      locationSubscription.remove();
+      AppState.removeEventListener('change', handleAppStateChange);
+      locationSubscription && locationSubscription.remove();
     };
   }, []);
-console.log(`-----> ${JSON.stringify(location)}`);
-  if (!location.latitude) {
-    return (<Text>{'Loading map view...'}</Text>);
-  }
 
-  return (
-    <MapView 
-      style={styles.map} 
-      provider={PROVIDER_GOOGLE} 
-      initialRegion={{
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: delta,
-        longitudeDelta: delta,
-      }}
-    >
-      <UserMarker location={location}/>
-    </MapView>
-  );
-};
-
-const UserMarker = (props: { location: { latitude: number, longitude: number }}) => {
-  // User phone gyroscope updates
-  const OUTER_LEN = 30;
-  const INNER_LEN = 20;
-  const [outerLength] = useState(OUTER_LEN);
-  const [innerLength] = useState(INNER_LEN);
-
-  useEffect(() => {
-    Gyroscope.addListener(gyroscopeData => {
-      const {x, y, z} = gyroscopeData;
-      console.log(`x: ${Math.round(x)}, y: ${Math.round(y)}, z: ${Math.round(z)}`);
-    });
-    return () => {
-      Gyroscope.removeAllListeners();
-    };
-  });
-
-  if (!props.location.latitude && !props.location.longitude) {
+  if (!latLng.latitude) {
     return (<Text style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignSelf: 'center' }}>{'Loading map view...'}</Text>);
   }
 
   return (
-    <Marker coordinate={{ latitude: props.location.latitude, longitude: props.location.longitude }} >
-      <View style={{ 
-        width: outerLength,
-        height: outerLength,
-        borderRadius: outerLength / 2,
-        ...styles.userMarkerOuter 
-      }}>
-        <View style={{
-          width: innerLength,
-          height: innerLength,
-          borderRadius: innerLength / 2,
-          ...styles.userMarkerInner 
-        }}>
-        </View>
-      </View>
-    </Marker>
+    <View style={{ flex: 1 }}>
+        <MapView 
+          ref={mapRef.current}
+          minZoomLevel={4}   
+          maxZoomLevel={16}
+          style={styles.map} 
+          provider={PROVIDER_GOOGLE} 
+          initialRegion={{
+            latitude: latLng.latitude,
+            longitude: latLng.longitude,
+            latitudeDelta: latDelta,
+            longitudeDelta: lngDelta,
+          }}
+          showsUserLocation={true}
+          followsUserLocation={true}
+        />
+        <TouchableHighlight 
+          style={styles.userCurrentLocation} 
+          onPress={() => {
+            if (mapRef && mapRef.current) {
+              //@ts-ignore
+              mapRef.current.animateToRegion({
+                latitude: latLng.latitude,
+                longitude: latLng.longitude,
+                latitudeDelta: LATITUDE_DELTA,
+                longitudeDelta: LONGITUDE_DELTA
+              });
+            }
+          }}>
+          <View style={{  alignSelf: 'center' }}>
+            <Ionicons name="navigate" size={32} color="grey" />
+          </View>
+        </TouchableHighlight>
+    </View>
   );
 };
 
@@ -153,15 +149,18 @@ const styles = StyleSheet.create({
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
   },
-  userMarkerOuter: {
+  userCurrentLocation: {
     borderColor: '#e2e4e7',
     backgroundColor: 'white',
     borderWidth: 1,
     flex: 1,
-    justifyContent: 'center'
-  },
-  userMarkerInner: {
-    backgroundColor: '#0083ff',
-    alignSelf: 'center'
-  },
+    justifyContent: 'center',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    position: 'absolute',
+    zIndex: 2,
+    bottom: 40,
+    right: 40
+  }
 });
