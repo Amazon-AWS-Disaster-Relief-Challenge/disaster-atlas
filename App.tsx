@@ -1,30 +1,28 @@
-import { StatusBar } from "expo-status-bar";
-import { Text, View } from "react-native";
+import * as React from "react";
 // @ts-ignore
 import { withAuthenticator } from "aws-amplify-react-native";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { NavigationContainer } from "@react-navigation/native";
 
 import config from "./lib/aws-exports";
+import Main from "./src/navigation/Main";
 import Amplify from "aws-amplify";
 
-Amplify.configure(config);
+Amplify.configure({
+  ...config,
+  Analytics: {
+    disabled: true,
+  },
+});
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#fff",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text>Open up App.tsx to start working on your adpp! HI</Text>
-        <StatusBar style="auto" />
-      </View>
+      <NavigationContainer>
+        <Main />
+      </NavigationContainer>
     </QueryClientProvider>
   );
 }

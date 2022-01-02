@@ -4,6 +4,13 @@
 
 #import <Expo/Expo.h>
 
+#import <GoogleMaps/GoogleMaps.h>
+
+
+#if RCT_DEV
+#import <React/RCTDevLoadingView.h>
+#endif
+
 @interface AppDelegate : EXAppDelegateWrapper <RCTBridgeDelegate>
 
 @end

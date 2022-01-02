@@ -16,14 +16,25 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mattwoodnyc.disasteratlas"
+      "bundleIdentifier": "com.mattwoodnyc.disasteratlas",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses the location information to geofence around user."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyAyTTyNQ0OqEtRv8JjsaWQ3jxpGSIJBy9k"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.mattwoodnyc.disasteratlas"
+      "package": "com.mattwoodnyc.disasteratlas",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAyTTyNQ0OqEtRv8JjsaWQ3jxpGSIJBy9k"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
