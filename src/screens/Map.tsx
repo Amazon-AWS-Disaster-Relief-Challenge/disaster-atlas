@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import MapView, { PROVIDER_GOOGLE, AnimatedRegion } from "react-native-maps";
-import { StyleSheet, View, Dimensions, Platform, Text, AppState, AppStateStatus, TouchableHighlight } from "react-native";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import { StyleSheet, View, Dimensions, Platform, Text, AppState, AppStateStatus, TouchableOpacity } from "react-native";
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync, watchPositionAsync, LocationAccuracy, LocationSubscription } from "expo-location";
-import { Ionicons } from "@expo/vector-icons";
+import Slider from "@react-native-community/slider";
+import { GOOGLE_MAP_STYLE } from "./MapStyle"; 
 
 //https://hpxml.pdc.org/public.xml
 interface UserLoc {
@@ -30,9 +31,12 @@ const NativeMapView = () => {
   const ASPECT_RATIO = width / height;
   const LATITUDE_DELTA = 0.003;  
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  const DEFAULT_ZOOM_LEVEL = 10;
+  const MIN_ZOOM_LEVEL = 0;
+  const MAX_ZOOM_LEVEL = 19;
   const [latDelta] = useState(LATITUDE_DELTA);
   const [lngDelta] = useState(LONGITUDE_DELTA);
-  const ANIMATION_DELAY = 7000;
+  const [maxZoom, setMaxZoom] = useState(DEFAULT_ZOOM_LEVEL);
 
   // App states
   const appState = useRef(AppState.currentState);
@@ -40,9 +44,7 @@ const NativeMapView = () => {
   // User Location updates
   const DISTANCE_INTERVAL = 5;
   const [latLng, setLatLng] = useState({} as UserLoc);
-  const [coordinate, setCoordinate] = useState({} as AnimatedRegion);
   const mapRef = useRef();
-  const markerRef = useRef();
 
   const isAppForeground = (nextAppState: AppStateStatus) => {
     return appState.current.match(/inactive|background/) && nextAppState === AppMode.ACTIVE;
@@ -57,20 +59,6 @@ const NativeMapView = () => {
       return;
     }
     setLatLng(location);
-    setCoordinate(new AnimatedRegion({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA
-      })
-    );
-    
-    if (Platform.OS == 'android') {
-      if (markerRef && markerRef.current) {
-        //@ts-ignore
-        markerRef.current.animateMarkerToCoordinate(coordinate, ANIMATION_DELAY);
-      }
-    }
   };
 
   useEffect(() => {
@@ -100,18 +88,31 @@ const NativeMapView = () => {
   }, []);
 
   if (!latLng.latitude) {
-    return (<Text style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignSelf: 'center' }}>{'Loading map view...'}</Text>);
+    return (
+      <View style={{
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center', //Centered vertically
+        alignItems: 'center' // Centered horizontally
+      }}>
+        <Text style={{ 
+          flex: 1, 
+          flexDirection: 'row', 
+          textAlign: 'center'
+        }}>{'Loading map view...'}</Text>
+      </View>
+    );
   }
 
   return (
     <View style={{ flex: 1 }}>
         <MapView 
           ref={mapRef.current}
-          minZoomLevel={4}   
-          maxZoomLevel={16}
+          minZoomLevel={MIN_ZOOM_LEVEL}   
+          maxZoomLevel={maxZoom}
           style={styles.map} 
           provider={PROVIDER_GOOGLE} 
-          initialRegion={{
+          region={{
             latitude: latLng.latitude,
             longitude: latLng.longitude,
             latitudeDelta: latDelta,
@@ -119,24 +120,31 @@ const NativeMapView = () => {
           }}
           showsUserLocation={true}
           followsUserLocation={true}
+          showsMyLocationButton={true}
+          zoomEnabled={true}
+          zoomControlEnabled={true}
+          showsPointsOfInterest={true}
+          showsCompass={true}
+          showsScale={true}
+          showsBuildings={true}
+          showsTraffic={true}
+          showsIndoors={true}
+          showsIndoorLevelPicker={true}
+          customMapStyle={GOOGLE_MAP_STYLE}
         />
-        <TouchableHighlight 
-          style={styles.userCurrentLocation} 
-          onPress={() => {
-            if (mapRef && mapRef.current) {
-              //@ts-ignore
-              mapRef.current.animateToRegion({
-                latitude: latLng.latitude,
-                longitude: latLng.longitude,
-                latitudeDelta: LATITUDE_DELTA,
-                longitudeDelta: LONGITUDE_DELTA
-              });
-            }
-          }}>
-          <View style={{  alignSelf: 'center' }}>
-            <Ionicons name="navigate" size={32} color="grey" />
-          </View>
-        </TouchableHighlight>
+        <Slider
+          style={styles.zoomLevelSlider}
+          vertical={true}
+          step={1}
+          value={DEFAULT_ZOOM_LEVEL}
+          minimumValue={MIN_ZOOM_LEVEL}
+          maximumValue={MAX_ZOOM_LEVEL}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#FFFFFF"
+          onValueChange={value => {
+            setMaxZoom(value);
+          }}
+        />
     </View>
   );
 };
@@ -162,5 +170,13 @@ const styles = StyleSheet.create({
     zIndex: 2,
     bottom: 40,
     right: 40
+  },
+  zoomLevelSlider: {
+    width: 200,
+    height: 60,
+    position: 'absolute',
+    zIndex: 2,
+    bottom: 40,
+    left: 100
   }
 });
