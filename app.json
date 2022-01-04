@@ -21,7 +21,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mattwoodnyc.disasteratlas",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app uses the location information to geofence around user."
+        "NSLocationWhenInUseUsageDescription": "This app uses the location information to geofence around user.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses the location information to geofence around user.",
+        "UIBackgroundModes": ["location", "fetch"]
       },
       "config": {
         "googleMapsApiKey": "AIzaSyAyTTyNQ0OqEtRv8JjsaWQ3jxpGSIJBy9k"
@@ -37,7 +39,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyAyTTyNQ0OqEtRv8JjsaWQ3jxpGSIJBy9k"
         }
-      }
+      },
+      "permissions":["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION","ACCESS_BACKGROUND_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

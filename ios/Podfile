@@ -8,10 +8,13 @@ require 'json'
 podfile_properties = JSON.parse(File.read('./Podfile.properties.json')) rescue {}
 
 target 'disasteratlas' do
+  use_modular_headers!
   use_expo_modules!
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path
   config = use_native_modules!
+
+  pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec', :modular_headers => false
 
   use_react_native!(
     :path => config[:reactNativePath],

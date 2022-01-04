@@ -3,6 +3,9 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXApplication (4.0.1):
     - ExpoModulesCore
+  - EXBackgroundFetch (10.1.0):
+    - ExpoModulesCore
+    - UMTaskManagerInterface
   - EXConstants (13.0.0):
     - ExpoModulesCore
   - EXErrorRecovery (3.0.4):
@@ -23,7 +26,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - EXSensors (11.1.0):
     - ExpoModulesCore
-  - EXSplashScreen (0.13.5):
+  - EXSplashScreen (0.14.1):
     - ExpoModulesCore
     - React-Core
   - EXTaskManager (10.1.0):
@@ -259,7 +262,7 @@ PODS:
     - React-Core
   - react-native-maps (0.29.4):
     - React-Core
-  - react-native-netinfo (7.1.7):
+  - react-native-netinfo (7.1.3):
     - React-Core
   - react-native-safe-area-context (3.3.2):
     - React-Core
@@ -333,7 +336,7 @@ PODS:
     - React-Core
   - RNCAsyncStorage (1.15.14):
     - React-Core
-  - RNCPicker (2.1.0):
+  - RNCPicker (2.2.1):
     - React-Core
   - UMAppLoader (3.0.0)
   - UMTaskManagerInterface (7.1.0):
@@ -343,6 +346,7 @@ PODS:
 DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
+  - EXBackgroundFetch (from `../node_modules/expo-background-fetch/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
@@ -405,6 +409,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
+  EXBackgroundFetch:
+    :path: "../node_modules/expo-background-fetch/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   EXErrorRecovery:
@@ -506,6 +512,7 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   EXApplication: bdc8dc27713235565da1029a34385229f31b8e08
+  EXBackgroundFetch: 12e8a8c522a2d2c5be07168d74af76567841f023
   EXConstants: 5d18484e38e8eacef7695a82214b6ac90133dedf
   EXErrorRecovery: deea88a01d38f8b1c1181b4e1d179b0ba0e4bb5b
   EXFileSystem: 7d1309ba6b38b82ef7fc9e80174de3f9184ac8b4
@@ -515,7 +522,7 @@ SPEC CHECKSUMS:
   Expo: 5f9812539b12998a813315ea8036971c9b56a9e7
   ExpoModulesCore: d04e519b3e8e21523b195bb21a40144e30f1e163
   EXSensors: 7cb3fc7b9dd8458787ff8b5b849f318fc357393f
-  EXSplashScreen: 57f329dbf25c5c12800feed79068a056453dc772
+  EXSplashScreen: 7872675b95bb07c25f922b3d3dfae70c76fb5a00
   EXTaskManager: 53bcb908457ff6282ffb1e31c25c0656e3725161
   FBLazyVector: c71c5917ec0ad2de41d5d06a5855f6d5eda06971
   FBReactNativeSpec: 2d68ca405f570b5a215e688e8dbbcc870dcdb79d
@@ -535,7 +542,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 34e23860273a23695342f58eed3ffd3ba10c31e0
   react-native-google-maps: 34517207071d54f3bc23c68752bbec0217bfc79e
   react-native-maps: a421fe6aeb74279597c4ea9598f25796108e2d89
-  react-native-netinfo: 27f287f2d191693f3b9d01a4273137fcf91c3b5d
+  react-native-netinfo: 42c0965fca99069b92e3f7360ab2d425985e5104
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-slider: 6e9b86e76cce4b9e35b3403193a6432ed07e0c81
   React-perflogger: cc76a4254d19640f1d8ad1c66fdee800414b805c
@@ -552,11 +559,11 @@ SPEC CHECKSUMS:
   ReactCommon: 8fea6422328e2fc093e25c9fac67adbcf0f04fb4
   RNAWSCognito: fd5136ee9e4db912be13a84fa00cd849137e0d3c
   RNCAsyncStorage: ea6b5c280997b2b32a587793163b1f10e580c4f7
-  RNCPicker: f7a40b21b915b7a187624d52f52b7bc2f73ea413
+  RNCPicker: cb57c823d5ce8d2d0b5dfb45ad97b737260dc59e
   UMAppLoader: 671576daa3fd3017d4879a5f23fc0dd3b36422a8
   UMTaskManagerInterface: 6f7150f9ec9bc6f2760eeae532a70de71ff951c1
   Yoga: e6ecf3fa25af9d4c87e94ad7d5d292eedef49749
 
-PODFILE CHECKSUM: 34003aaef20463c40df5b17f71ae2fd456e7739b
+PODFILE CHECKSUM: 2066d66b2a0ae19490c4802d72b6e04d827b05a9
 
 COCOAPODS: 1.11.2

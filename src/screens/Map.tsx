@@ -1,7 +1,35 @@
-import { useState, useEffect, useRef } from "react";
+import { 
+  useState, 
+  useEffect, 
+  useRef 
+} from "react";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
-import { StyleSheet, View, Dimensions, Platform, Text, AppState, AppStateStatus, ImageBackground } from "react-native";
-import { requestForegroundPermissionsAsync, getCurrentPositionAsync, watchPositionAsync, LocationAccuracy, LocationSubscription } from "expo-location";
+import { 
+  StyleSheet, 
+  View, 
+  Dimensions, 
+  Platform, 
+  Text, 
+  AppState, 
+  AppStateStatus, 
+  ImageBackground 
+} from "react-native";
+import { 
+  requestForegroundPermissionsAsync, 
+  getCurrentPositionAsync, 
+  watchPositionAsync, 
+  LocationAccuracy, 
+  LocationSubscription, 
+  GeofencingEventType, 
+  startGeofencingAsync, 
+  LocationRegion,
+  requestBackgroundPermissionsAsync,
+  // useForegroundPermissions,
+  // useBackgroundPermissions,
+  PermissionStatus,
+  LocationPermissionResponse
+} from "expo-location";
+import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
 import { GOOGLE_MAP_STYLE } from "./MapStyle"; 
 
@@ -84,12 +112,47 @@ const AssetPaths = {
   [Disaster.FALLBACK]: require('../../assets/burger.png')
 };
 
+enum UserTasks {
+  LOCATION_GEO_FENCE="LOCATION_GEO_FENCE"
+};
+
+// User Tasks
+//@ts-ignore
+TaskManager.defineTask(UserTasks.LOCATION_GEO_FENCE, ({ data: { eventType, region }, error }) => {
+  if (error) {
+    // check `error.message` for more details.
+    return;
+  }
+  if (eventType === GeofencingEventType.Enter) {
+    console.log("You've entered region:", region);
+  } else if (eventType === GeofencingEventType.Exit) {
+    console.log("You've left region:", region);
+  }
+});
+
 export default function Map() {
   return (
     <View style={styles.container}>
       {
         Platform.OS !== "web" && <NativeMapView />
       }
+    </View>
+  );
+};
+
+const Message = (props: { msg: string }) => {
+  return (
+    <View style={{
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center', //Centered vertically
+      alignItems: 'center' // Centered horizontally
+    }}>
+      <Text style={{ 
+        flex: 1, 
+        flexDirection: 'row', 
+        textAlign: 'center'
+      }}>{props.msg}</Text>
     </View>
   );
 };
@@ -106,6 +169,7 @@ const NativeMapView = () => {
   const [lngDelta] = useState(LONGITUDE_DELTA);
   const [maxZoom, setMaxZoom] = useState(DEFAULT_ZOOM_LEVEL);
   const [disasterCards, setDisasterCards] = useState([] as DisasterCard[]);
+  const [hasPermissions, setHasPermissions] = useState(false);
 
   // App states
   const appState = useRef(AppState.currentState);
@@ -115,41 +179,45 @@ const NativeMapView = () => {
   const [latLng, setLatLng] = useState({} as Location);
   const mapRef = useRef();
 
-  const fetchDisasters = () => {
-    return fetch(DISASTER_ALERT_PUBLIC_URL)
-    .then((response) => response.text())
-    .then((textResponse) => {
-        const disasterCards: DisasterCard[] = [];
-        const disasterResponsesArr = parser.parseFromString(textResponse);
-        const children = disasterResponsesArr.children;
-        for (let idx = 0; idx < children.length; idx++) {
-          const disaster = Object.assign({}, children[idx]);
-          const disasterCard = {
-            uuid: disaster.getElementsByTagName(XmlAttributeMap.uuid)[0]['value'],
-            latLng: {
-              latitude: +disaster.getElementsByTagName(XmlAttributeMap.latitude)[0]['value'],
-              longitude: +disaster.getElementsByTagName(XmlAttributeMap.longitude)[0]['value'],
-            } as Location,
-            severity: disaster.getElementsByTagName(XmlAttributeMap.severity)[0]['value'],
-            disaster: disaster.getElementsByTagName(XmlAttributeMap.disaster)[0]['value'],
-            hazardId: disaster.getElementsByTagName(XmlAttributeMap.hazardId)[0]['value'],
-            hazardName: disaster.getElementsByTagName(XmlAttributeMap.hazardName)[0]['value'],
-            lastUpdate: disaster.getElementsByTagName(XmlAttributeMap.lastUpdate)[0]['value'],
-            description: disaster.getElementsByTagName(XmlAttributeMap.description)[0]['value'],
-            assetUrl: AssetPaths[disaster.getElementsByTagName(XmlAttributeMap.disaster)[0]['value'] as Disaster ?? Disaster.FALLBACK],
-          } as unknown as DisasterCard;
+  const fetchDisasters = async () => {
+    const fetchPromise = () => {
+      return fetch(DISASTER_ALERT_PUBLIC_URL)
+      .then((response) => response.text())
+      .then((textResponse) => {
+          const disasterCards: DisasterCard[] = [];
+          const disasterResponsesArr = parser.parseFromString(textResponse);
+          const children = disasterResponsesArr.children;
+          for (let idx = 0; idx < children.length; idx++) {
+            const disaster = Object.assign({}, children[idx]);
+            const disasterCard = {
+              uuid: disaster.getElementsByTagName(XmlAttributeMap.uuid)[0]['value'],
+              latLng: {
+                latitude: +disaster.getElementsByTagName(XmlAttributeMap.latitude)[0]['value'],
+                longitude: +disaster.getElementsByTagName(XmlAttributeMap.longitude)[0]['value'],
+              } as Location,
+              severity: disaster.getElementsByTagName(XmlAttributeMap.severity)[0]['value'],
+              disaster: disaster.getElementsByTagName(XmlAttributeMap.disaster)[0]['value'],
+              hazardId: disaster.getElementsByTagName(XmlAttributeMap.hazardId)[0]['value'],
+              hazardName: disaster.getElementsByTagName(XmlAttributeMap.hazardName)[0]['value'],
+              lastUpdate: disaster.getElementsByTagName(XmlAttributeMap.lastUpdate)[0]['value'],
+              description: disaster.getElementsByTagName(XmlAttributeMap.description)[0]['value'],
+              assetUrl: AssetPaths[disaster.getElementsByTagName(XmlAttributeMap.disaster)[0]['value'] as Disaster ?? Disaster.FALLBACK],
+            } as unknown as DisasterCard;
 
-          if (!!disasterCard.latLng.latitude) {
-            disasterCards.push(disasterCard);
+            if (!!disasterCard.latLng.latitude) {
+              disasterCards.push(disasterCard);
+            }
           }
-        }
 
-        setDisasterCards(disasterCards);
-    })
-    .catch((error) => {
-        console.log(error);
-    });
-}
+          setDisasterCards(disasterCards);
+      })
+      .catch((error) => {
+          console.log(error);
+      });
+    };
+    
+    await fetchPromise();
+  }
 
   const isAppForeground = (nextAppState: AppStateStatus) => {
     return appState.current.match(/inactive|background/) && nextAppState === AppMode.ACTIVE;
@@ -171,20 +239,46 @@ const NativeMapView = () => {
     AppState.addEventListener('change', handleAppStateChange);
 
     let locationSubscription: LocationSubscription;
-    const initUserLocAysnc = async () => {
-      const foregroundPermissions = await requestForegroundPermissionsAsync();
-      if (foregroundPermissions.status == 'granted') {
-        // Get user's current location
-        const { coords } = await getCurrentPositionAsync({});
-        setLocationAndAnimate({ longitude: +coords.longitude, latitude: +coords.latitude } as Location);
-        // Foreground mode updates
-        locationSubscription = await watchPositionAsync({ accuracy: LocationAccuracy.Highest, distanceInterval: DISTANCE_INTERVAL }, locationData => {
-          isAppForeground(appState.current) && setLocationAndAnimate({ longitude: +locationData.coords.longitude, latitude: +locationData.coords.latitude } as Location);
-        });
-      }
-    };
     
-    fetchDisasters().then(() => initUserLocAysnc());
+    const watchCurrentPosition = async () => {
+      // Get user's current location
+      const { coords } = await getCurrentPositionAsync({});
+      setLocationAndAnimate({ longitude: +coords.longitude, latitude: +coords.latitude } as Location);
+      // Foreground mode updates
+      locationSubscription = await watchPositionAsync({ accuracy: LocationAccuracy.Highest, distanceInterval: DISTANCE_INTERVAL }, locationData => {
+        isAppForeground(appState.current) && setLocationAndAnimate({ longitude: +locationData.coords.longitude, latitude: +locationData.coords.latitude } as Location);
+      });
+    };
+
+    const beginUserTasks = async () => {
+      startGeofencingAsync(UserTasks.LOCATION_GEO_FENCE, [{
+        latitude: latLng.latitude,
+        longitude: latLng.longitude,
+        radius: 10
+      } as LocationRegion] as LocationRegion[]);
+    };
+
+    const init = async () => {
+      try {
+        // Ask Permissions
+        const fgLocationPermissionResponse = await requestForegroundPermissionsAsync();
+        // const bgLocationPermissionResponse = await requestBackgroundPermissionsAsync();
+        if (fgLocationPermissionResponse.status == PermissionStatus.GRANTED) {
+          setHasPermissions(true);
+          watchCurrentPosition();
+          if (latLng.latitude) {
+            beginUserTasks();
+          }
+          fetchDisasters();
+        } else {
+          setHasPermissions(false);
+        }
+      } catch(error) {
+        console.log(error);
+      }  
+    };
+
+    init();
 
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -192,26 +286,21 @@ const NativeMapView = () => {
     };
   }, []);
 
+  if (!hasPermissions) {
+    return (
+      <Message msg={'Foreground / Background Permissions not granted'} />
+    );
+  }
+
   if (!latLng.latitude) {
     return (
-      <View style={{
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center', //Centered vertically
-        alignItems: 'center' // Centered horizontally
-      }}>
-        <Text style={{ 
-          flex: 1, 
-          flexDirection: 'row', 
-          textAlign: 'center'
-        }}>{'Loading map view...'}</Text>
-      </View>
+      <Message msg={'Loading map view...'}/>
     );
   }
 
   return (
     <View style={{ flex: 1 }}>
-        <MapView 
+        <MapView
           ref={mapRef.current}
           minZoomLevel={MIN_ZOOM_LEVEL}   
           maxZoomLevel={maxZoom}
