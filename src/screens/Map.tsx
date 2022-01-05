@@ -1,7 +1,7 @@
 import { 
   useState, 
   useEffect, 
-  useRef 
+  useRef
 } from "react";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { 
@@ -23,15 +23,16 @@ import {
   GeofencingEventType, 
   startGeofencingAsync, 
   LocationRegion,
-  requestBackgroundPermissionsAsync,
-  // useForegroundPermissions,
-  // useBackgroundPermissions,
+  //requestBackgroundPermissionsAsync,
   PermissionStatus,
-  LocationPermissionResponse
+  //LocationPermissionResponse
 } from "expo-location";
 import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
-import { GOOGLE_MAP_STYLE } from "./MapStyle"; 
+
+import { GOOGLE_MAP_STYLE } from "../components/MapStyle"; 
+import { AppMode, AssetPaths, Disaster, DisasterCard, Location, UserTasks, XmlAttributeMap } from "../commons/UserMap";
+import { DisasterCardToast } from "../components/DisasterCardDetail";
 
 // es6 import not supported for this xml parser
 const XMLParser = require('react-xml-parser');
@@ -39,82 +40,6 @@ const parser = new XMLParser();
 
 // Disaster Alert API
 const DISASTER_ALERT_PUBLIC_URL = "https://hpxml.pdc.org/public.xml";
-interface Location {
-  latitude: number,
-  longitude: number,
-};
-
-interface DisasterCard {
-  uuid: string,
-  latLng: Location,
-  severity: Severity,
-  disaster: Disaster,
-  hazardId: string,
-  hazardName: string,
-  lastUpdate: string,
-  description: string,
-  assetUrl: any
-};
-
-const XmlAttributeMap = {
-  uuid: 'uuid',
-  latitude: 'latitude',
-  longitude: 'longitude',
-  severity: 'severity_ID',
-  disaster: 'type_ID',
-  hazardId: 'hazard_ID',
-  hazardName: 'hazard_Name',
-  lastUpdate: 'last_Update',
-  description: 'description'
-};
-
-enum AppMode {
-  ACTIVE="active",
-  INACTIVE="inactive"
-};
-
-enum Disaster {
-  FLOOD="FLOOD",
-  WILDFIRE="WILDFIRE",
-  WINTERSTORM="WINTERSTORM",
-  TORNADO="TORNADO",
-  VOLCANO="VOLCANO",
-  EARTHQUAKE="EARTHQUAKE",
-  STORM="STORM",
-  EXTREMETEMPERATURE="EXTREMETEMPERATURE",
-  BIOMEDICAL="BIOMEDICAL",
-  AVALANCHE="AVALANCHE",
-  DROUGHT="DROUGHT",
-  LANDSLIDE="LANDSLIDE",
-  FALLBACK="FALLBACK"
-};
-
-enum Severity {
-  WARNING="WARNING",
-  INFORMATION="INFORMATION",
-  WATCH="WATCH",
-  ADVISORY="ADVISORY"
-};
-
-const AssetPaths = {
-  [Disaster.FLOOD]: require('../../assets/flood.png'),
-  [Disaster.WILDFIRE]: require('../../assets/wildfire.png'),
-  [Disaster.WINTERSTORM]: require('../../assets/winterstorm.png'),
-  [Disaster.TORNADO]: require('../../assets/tornado.png'),
-  [Disaster.VOLCANO]: require('../../assets/volcano.png'),
-  [Disaster.EARTHQUAKE]: require('../../assets/earthquake.png'),
-  [Disaster.STORM]: require('../../assets/storm.png'),
-  [Disaster.EXTREMETEMPERATURE]: require('../../assets/extremetemperature.png'),
-  [Disaster.BIOMEDICAL]: require('../../assets/biomedical.png'),
-  [Disaster.AVALANCHE]: require('../../assets/avalanche.png'),
-  [Disaster.DROUGHT]: require('../../assets/drought.png'),
-  [Disaster.LANDSLIDE]: require('../../assets/landslide.png'),
-  [Disaster.FALLBACK]: require('../../assets/burger.png')
-};
-
-enum UserTasks {
-  LOCATION_GEO_FENCE="LOCATION_GEO_FENCE"
-};
 
 // User Tasks
 //@ts-ignore
@@ -170,6 +95,7 @@ const NativeMapView = () => {
   const [maxZoom, setMaxZoom] = useState(DEFAULT_ZOOM_LEVEL);
   const [disasterCards, setDisasterCards] = useState([] as DisasterCard[]);
   const [hasPermissions, setHasPermissions] = useState(false);
+  const [selectedDisasterCard, setSelectedDisasterCard] = useState({} as DisasterCard);
 
   // App states
   const appState = useRef(AppState.currentState);
@@ -329,7 +255,10 @@ const NativeMapView = () => {
           {
             disasterCards && disasterCards.length > 0 &&
             disasterCards.map((disasterCard, key) => 
-              <Marker key={key} coordinate={{ latitude: disasterCard.latLng.latitude, longitude: disasterCard.latLng.longitude }}>
+              <Marker 
+                key={key} 
+                coordinate={{ latitude: disasterCard.latLng.latitude, longitude: disasterCard.latLng.longitude }}
+                onPress={() => setSelectedDisasterCard(disasterCard)}>
                 <ImageBackground source={disasterCard.assetUrl} style={{ width: 25, height: 25 }}>
                     <Text style={{ width: 0, height: 0 }}>{Math.random()}</Text>
                 </ImageBackground>
@@ -337,6 +266,9 @@ const NativeMapView = () => {
             )
           }
         </MapView>
+        {
+          Object.keys(selectedDisasterCard).length > 0 && <DisasterCardToast toastData={selectedDisasterCard} />
+        }
         <Slider
           style={styles.zoomLevelSlider}
           vertical={true}
