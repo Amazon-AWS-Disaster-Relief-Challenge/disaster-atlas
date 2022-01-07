@@ -10,9 +10,11 @@ import {
   Dimensions, 
   Platform, 
   Text, 
+  TextInput,
   AppState, 
   AppStateStatus, 
-  ImageBackground 
+  ImageBackground,
+  ScrollView,
 } from "react-native";
 import { 
   requestForegroundPermissionsAsync, 
@@ -29,10 +31,11 @@ import {
 } from "expo-location";
 import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
+import { Ionicons } from '@expo/vector-icons';
 
 import { GOOGLE_MAP_STYLE } from "../components/MapStyle"; 
 import { AppMode, AssetPaths, Disaster, DisasterCard, Location, UserTasks, XmlAttributeMap } from "../commons/UserMap";
-import { DisasterCardToast } from "../components/DisasterCardDetail";
+import { DisasterCardDetail } from "../components/DisasterCardDetail";
 
 // es6 import not supported for this xml parser
 const XMLParser = require('react-xml-parser');
@@ -79,6 +82,76 @@ const Message = (props: { msg: string }) => {
         textAlign: 'center'
       }}>{props.msg}</Text>
     </View>
+  );
+};
+
+const SearchBar = (props: { data: DisasterCard[] }) => {
+  const [searchKey, setSearchKey] = useState("");
+  const [filterList, setFilterList] = useState([] as DisasterCard[]);
+
+  const searchResultExists = (searchText: string) => (searchText.toLowerCase().search(searchKey) > -1);
+
+  useEffect(() => {
+    const key = searchKey.trim();
+    if (key.length > 0) {
+      const filteredData = props.data.filter((d: DisasterCard) => (searchResultExists(d.hazardName) || searchResultExists(d.disaster) || searchResultExists(d.description)));
+      filteredData.length > 0 && setFilterList(filteredData);
+    }
+  }, [searchKey]);
+
+  return (
+    <>
+      <View style={{
+        margin: 20,
+        padding: 10,
+        flexDirection: "row",
+        position: 'absolute',
+        zIndex: 2,
+        backgroundColor: '#FFFFFF',
+        width: Dimensions.get("window").width - 40,
+        height: 45, 
+        justifyContent: "flex-start", 
+        alignItems: "center", 
+        top: 30, 
+        borderRadius: 20
+      }}>
+          <Ionicons name="search-outline" size={24} color="#cdcdcd" />
+          <TextInput style={{ fontSize: 16, color: "black", textAlign: "left", padding: 3, }} placeholder="Search Disasters" onChangeText={key => setSearchKey(key.toLowerCase()) } />
+          <Ionicons name="close" size={24} color="#cdcdcd" 
+            style={{ position: 'absolute', right: 10 }} 
+            onPress={() => {
+              setSearchKey("");
+              setFilterList([] as DisasterCard[]);
+            }} 
+          />
+      </View>
+      {
+        filterList.length > 0 &&
+        <ScrollView style={{
+          margin: 20,
+          padding: 10,
+          flexDirection: "row",
+          position: 'absolute',
+          zIndex: 2,
+          backgroundColor: '#FFFFFF',
+          width: Dimensions.get("window").width - 40,
+          top: 80, 
+          height: 200
+        }}>
+          {
+            filterList.map(f => {
+              return (
+                <View style={{ flex: 1, flexDirection: 'column', width: Dimensions.get("window").width - 60, paddingLeft: 10, paddingRight: 10, maxHeight: 70 }}>
+                  <Text style={{ textAlign: "left", fontSize: 16, color: '#000000', lineHeight: 20 }}>{f.hazardName}</Text>
+                  <Text style={{ textAlign: "left", fontSize: 12, color: '#858585', lineHeight: 20 }} numberOfLines={1}>{f.description}</Text>
+                  <View style={{ borderBottomColor: '#cdcdcd', borderBottomWidth: 1, paddingTop: 10 }} />
+                </View>
+              );
+            })
+          }
+        </ScrollView>
+      }
+    </>
   );
 };
 
@@ -267,7 +340,7 @@ const NativeMapView = () => {
           }
         </MapView>
         {
-          Object.keys(selectedDisasterCard).length > 0 && <DisasterCardToast toastData={selectedDisasterCard} />
+          Object.keys(selectedDisasterCard).length > 0 && <DisasterCardDetail toastData={selectedDisasterCard} />
         }
         <Slider
           style={styles.zoomLevelSlider}
@@ -282,6 +355,7 @@ const NativeMapView = () => {
             setMaxZoom(value);
           }}
         />
+        <SearchBar data={disasterCards} />
     </View>
   );
 };
