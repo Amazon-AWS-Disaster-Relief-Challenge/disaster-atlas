@@ -3,18 +3,16 @@ import {
   useEffect, 
   useRef
 } from "react";
-import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker, Region } from "react-native-maps";
 import { 
   StyleSheet, 
   View, 
   Dimensions, 
   Platform, 
   Text, 
-  TextInput,
   AppState, 
   AppStateStatus, 
   ImageBackground,
-  ScrollView,
 } from "react-native";
 import { 
   requestForegroundPermissionsAsync, 
@@ -31,11 +29,11 @@ import {
 } from "expo-location";
 import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
-import { Ionicons } from '@expo/vector-icons';
 
 import { GOOGLE_MAP_STYLE } from "../components/MapStyle"; 
 import { AppMode, AssetPaths, Disaster, DisasterCard, Location, UserTasks, XmlAttributeMap } from "../commons/UserMap";
 import { DisasterCardDetail } from "../components/DisasterCardDetail";
+import { MapSearchBar } from "../components/MapSearchBar";
 
 // es6 import not supported for this xml parser
 const XMLParser = require('react-xml-parser');
@@ -85,76 +83,6 @@ const Message = (props: { msg: string }) => {
   );
 };
 
-const SearchBar = (props: { data: DisasterCard[] }) => {
-  const [searchKey, setSearchKey] = useState("");
-  const [filterList, setFilterList] = useState([] as DisasterCard[]);
-
-  const searchResultExists = (searchText: string) => (searchText.toLowerCase().search(searchKey) > -1);
-
-  useEffect(() => {
-    const key = searchKey.trim();
-    if (key.length > 0) {
-      const filteredData = props.data.filter((d: DisasterCard) => (searchResultExists(d.hazardName) || searchResultExists(d.disaster) || searchResultExists(d.description)));
-      filteredData.length > 0 && setFilterList(filteredData);
-    }
-  }, [searchKey]);
-
-  return (
-    <>
-      <View style={{
-        margin: 20,
-        padding: 10,
-        flexDirection: "row",
-        position: 'absolute',
-        zIndex: 2,
-        backgroundColor: '#FFFFFF',
-        width: Dimensions.get("window").width - 40,
-        height: 45, 
-        justifyContent: "flex-start", 
-        alignItems: "center", 
-        top: 30, 
-        borderRadius: 20
-      }}>
-          <Ionicons name="search-outline" size={24} color="#cdcdcd" />
-          <TextInput style={{ fontSize: 16, color: "black", textAlign: "left", padding: 3, }} placeholder="Search Disasters" onChangeText={key => setSearchKey(key.toLowerCase()) } />
-          <Ionicons name="close" size={24} color="#cdcdcd" 
-            style={{ position: 'absolute', right: 10 }} 
-            onPress={() => {
-              setSearchKey("");
-              setFilterList([] as DisasterCard[]);
-            }} 
-          />
-      </View>
-      {
-        filterList.length > 0 &&
-        <ScrollView style={{
-          margin: 20,
-          padding: 10,
-          flexDirection: "row",
-          position: 'absolute',
-          zIndex: 2,
-          backgroundColor: '#FFFFFF',
-          width: Dimensions.get("window").width - 40,
-          top: 80, 
-          height: 200
-        }}>
-          {
-            filterList.map(f => {
-              return (
-                <View style={{ flex: 1, flexDirection: 'column', width: Dimensions.get("window").width - 60, paddingLeft: 10, paddingRight: 10, maxHeight: 70 }}>
-                  <Text style={{ textAlign: "left", fontSize: 16, color: '#000000', lineHeight: 20 }}>{f.hazardName}</Text>
-                  <Text style={{ textAlign: "left", fontSize: 12, color: '#858585', lineHeight: 20 }} numberOfLines={1}>{f.description}</Text>
-                  <View style={{ borderBottomColor: '#cdcdcd', borderBottomWidth: 1, paddingTop: 10 }} />
-                </View>
-              );
-            })
-          }
-        </ScrollView>
-      }
-    </>
-  );
-};
-
 const NativeMapView = () => {
   const { width, height } = Dimensions.get('window');
   const ASPECT_RATIO = width / height;
@@ -165,7 +93,7 @@ const NativeMapView = () => {
   const MAX_ZOOM_LEVEL = 19;
   const [latDelta] = useState(LATITUDE_DELTA);
   const [lngDelta] = useState(LONGITUDE_DELTA);
-  const [maxZoom, setMaxZoom] = useState(DEFAULT_ZOOM_LEVEL);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM_LEVEL);
   const [disasterCards, setDisasterCards] = useState([] as DisasterCard[]);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [selectedDisasterCard, setSelectedDisasterCard] = useState({} as DisasterCard);
@@ -176,7 +104,7 @@ const NativeMapView = () => {
   // User Location updates
   const DISTANCE_INTERVAL = 5;
   const [latLng, setLatLng] = useState({} as Location);
-  const mapRef = useRef();
+  const mapRef = useRef({} as MapView);
 
   const fetchDisasters = async () => {
     const fetchPromise = () => {
@@ -232,6 +160,22 @@ const NativeMapView = () => {
     }
     setLatLng(location);
   };
+
+  const moveMapToCoordinate = (_latLng: Location) => {
+    if (mapRef && mapRef.current) {
+      //@ts-ignore
+      mapRef.current.animateToRegion({
+        latitude: _latLng.latitude,
+        longitude: _latLng.longitude,
+        latitudeDelta: latDelta + zoom,
+        longitudeDelta: lngDelta + zoom
+      });
+    }
+  };
+
+  useEffect(() => {
+    console.log(`zoom level ---> ${zoom}`);
+  }, [zoom]);
 
   useEffect(() => {
     // register app state change
@@ -300,20 +244,22 @@ const NativeMapView = () => {
   return (
     <View style={{ flex: 1 }}>
         <MapView
-          ref={mapRef.current}
-          minZoomLevel={MIN_ZOOM_LEVEL}   
-          maxZoomLevel={maxZoom}
+          ref={ref => {
+            //@ts-ignore
+            mapRef.current = ref;
+          }}
           style={styles.map} 
           provider={PROVIDER_GOOGLE} 
-          region={{
+          initialRegion={{
             latitude: latLng.latitude,
             longitude: latLng.longitude,
-            latitudeDelta: latDelta,
-            longitudeDelta: lngDelta,
+            latitudeDelta: latDelta + zoom,
+            longitudeDelta: lngDelta + zoom,
           }}
           showsUserLocation={true}
           followsUserLocation={true}
           showsMyLocationButton={true}
+          zoomTapEnabled={true}
           zoomEnabled={true}
           zoomControlEnabled={true}
           showsPointsOfInterest={true}
@@ -331,7 +277,11 @@ const NativeMapView = () => {
               <Marker 
                 key={key} 
                 coordinate={{ latitude: disasterCard.latLng.latitude, longitude: disasterCard.latLng.longitude }}
-                onPress={() => setSelectedDisasterCard(disasterCard)}>
+                onPress={() => {
+                  setSelectedDisasterCard(disasterCard);
+                  moveMapToCoordinate(disasterCard.latLng);
+                }}
+              >
                 <ImageBackground source={disasterCard.assetUrl} style={{ width: 25, height: 25 }}>
                     <Text style={{ width: 0, height: 0 }}>{Math.random()}</Text>
                 </ImageBackground>
@@ -352,10 +302,16 @@ const NativeMapView = () => {
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#FFFFFF"
           onValueChange={value => {
-            setMaxZoom(value);
+            setZoom(value);
+            moveMapToCoordinate({
+              latitude: Object.keys(selectedDisasterCard).length > 0 ? selectedDisasterCard.latLng.latitude : latLng.latitude,
+              longitude: Object.keys(selectedDisasterCard).length > 0 ? selectedDisasterCard.latLng.longitude : latLng.longitude,
+              latitudeDelta: latDelta + zoom,
+              longitudeDelta: lngDelta + zoom,
+            } as Location)
           }}
         />
-        <SearchBar data={disasterCards} />
+        <MapSearchBar data={disasterCards} navigateOnMap={(latLng: Location) => moveMapToCoordinate(latLng)} />
     </View>
   );
 };
