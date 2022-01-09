@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { Ionicons } from '@expo/vector-icons';
-import { DisasterCard } from "../commons/UserMap";
-import { Severity } from "../commons/UserMap";
+import { DisasterCard } from "../../commons/UserMap";
+import { Severity } from "../../commons/UserMap";
 
 export const DisasterCardDetail = (props: { toastData: DisasterCard }) => {
     const closeBtnRef = useRef({} as any);
