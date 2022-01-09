@@ -3,7 +3,6 @@ import {
     StyleSheet,
     Dimensions,
     ScrollView,
-    View,
     TouchableWithoutFeedback,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
@@ -31,34 +30,31 @@ export const DisasterCardDetail = (props: { toastData: DisasterCard }) => {
     const easing = 'ease-in-out';
 
     useEffect(() => {
-        textRefs.current.forEach(c => {
-            c.slideInUp();
-        });
-        if (closeBtnRef && Object.keys(closeBtnRef.current).length > 0) {
-            closeBtnRef.current.fadeInDown();
+        if (hide == true) {
+            setHide(false);
         }
-    }, [props.toastData, hide]);
+        textRefs.current.forEach(c => {
+            c && c.slideInUp();
+        });
+        closeBtnRef.current && closeBtnRef.current.fadeInDown();
+    }, [props.toastData]);
 
     return (
         <>
             {
                 hide == false && 
                 <ScrollView style={styles.container}>
-                    <Animatable.View ref={el => (closeBtnRef.current = el)} style={styles.closeBtn} animation={animationBtn} duration={durations[durations.length - 1]} easing={easing}>
-                        <TouchableWithoutFeedback onPress={() => setHide(true)} >
+                    <TouchableWithoutFeedback onPress={() => setHide(true)} >
+                        <Animatable.View style={styles.closeBtn} ref={el => (closeBtnRef.current = el)} animation={animationBtn} duration={durations[durations.length - 1]} easing={easing}>
                             <Ionicons name="close" size={24} color="#FFFFFF" />
-                        </TouchableWithoutFeedback>
-                    </Animatable.View>
+                        </Animatable.View>
+                    </TouchableWithoutFeedback>
                     <Animatable.Text ref={el => (textRefs.current[0] = el)} animation={animation} duration={durations[0]} easing={easing} style={styles.title}>{props.toastData.disaster}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[1] = el)} animation={animation} duration={durations[1]} easing={easing} style={{...styles.severity, color: color}}>{`[${props.toastData.severity}]`}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[2] = el)} animation={animation} duration={durations[2]} easing={easing} style={styles.hazardName}>{`${props.toastData.hazardName}`}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[3] = el)} animation={animation} duration={durations[3]} easing={easing} style={styles.descriptionAndTime}>{`Last updated: ${lastUpdatedTime}`}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[4] = el)} animation={animation} duration={durations[4]} easing={easing} style={styles.descriptionAndTime1}>{props.toastData.description}</Animatable.Text>
                 </ScrollView>
-            }
-            {
-                hide == true &&
-                <View></View>
             }
         </>
     );
@@ -118,6 +114,7 @@ const styles = StyleSheet.create({
     closeBtn: {
         position: 'absolute',
         right: 0,
-        top: 0
+        top: 0,
+        zIndex: 4
     }
 });

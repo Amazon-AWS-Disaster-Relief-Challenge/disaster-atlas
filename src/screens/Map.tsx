@@ -3,7 +3,7 @@ import {
   useEffect, 
   useRef
 } from "react";
-import MapView, { PROVIDER_GOOGLE, Marker, Region } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { 
   StyleSheet, 
   View, 
@@ -13,6 +13,7 @@ import {
   AppState, 
   AppStateStatus, 
   ImageBackground,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { 
   requestForegroundPermissionsAsync, 
@@ -29,6 +30,7 @@ import {
 } from "expo-location";
 import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
+import { MaterialIcons } from '@expo/vector-icons'; 
 
 import { GOOGLE_MAP_STYLE } from "../components/MapStyle"; 
 import { AppMode, AssetPaths, Disaster, DisasterCard, Location, UserTasks, XmlAttributeMap } from "../commons/UserMap";
@@ -80,6 +82,27 @@ const Message = (props: { msg: string }) => {
         textAlign: 'center'
       }}>{props.msg}</Text>
     </View>
+  );
+};
+
+const CurrentLocationBtn = (props: { moveToMyLocation: () => void }) => {
+  return (
+    <TouchableWithoutFeedback onPress={() => props.moveToMyLocation()}>
+      <View style={{
+        position: 'absolute',
+        bottom: 40,
+        right: 10,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        backgroundColor: '#FFFFFF'
+      }}>
+        <MaterialIcons name="my-location" size={24} color="black" style={{ alignSelf: 'center' }} />
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -174,10 +197,6 @@ const NativeMapView = () => {
   };
 
   useEffect(() => {
-    console.log(`zoom level ---> ${zoom}`);
-  }, [zoom]);
-
-  useEffect(() => {
     // register app state change
     AppState.addEventListener('change', handleAppStateChange);
 
@@ -258,7 +277,7 @@ const NativeMapView = () => {
           }}
           showsUserLocation={true}
           followsUserLocation={true}
-          showsMyLocationButton={true}
+          showsMyLocationButton={false}
           zoomTapEnabled={true}
           zoomEnabled={true}
           zoomControlEnabled={true}
@@ -312,6 +331,12 @@ const NativeMapView = () => {
           }}
         />
         <MapSearchBar data={disasterCards} navigateOnMap={(latLng: Location) => moveMapToCoordinate(latLng)} />
+        <CurrentLocationBtn 
+          moveToMyLocation={() => { 
+            moveMapToCoordinate(latLng);
+            setSelectedDisasterCard({} as DisasterCard);
+          }} 
+        />
     </View>
   );
 };
