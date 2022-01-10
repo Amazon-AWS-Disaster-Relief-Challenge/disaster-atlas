@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Dimensions, ScrollView, View , Text, TouchableWithoutFeedback } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import DelayInput from "react-native-debounce-input";
-import { DisasterCard, Location } from "../commons/UserMap";
+import { DisasterCard, Location } from "../../commons/UserMap";
 
-export const MapSearchBar = (props: { data: DisasterCard[], navigateOnMap: (latLng: Location) => void }) => {
+export const MapSearchBar = (props: { data: DisasterCard[], navigateOnMap: (_latLng: Location) => void, setSelectedDisasterCard: (_d: DisasterCard) => void }) => {
     const [searchKey, setSearchKey] = useState("");
     const [filterList, setFilterList] = useState([] as DisasterCard[]);
   
@@ -71,6 +71,7 @@ export const MapSearchBar = (props: { data: DisasterCard[], navigateOnMap: (latL
                         key={index} 
                         onPress={() => {
                             props.navigateOnMap(f.latLng);
+                            props.setSelectedDisasterCard(f);
                             setSearchKey("");
                         }}
                     >

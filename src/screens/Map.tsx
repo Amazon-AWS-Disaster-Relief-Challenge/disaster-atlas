@@ -3,7 +3,7 @@ import {
   useEffect, 
   useRef
 } from "react";
-import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker, MapTypes } from "react-native-maps";
 import { 
   StyleSheet, 
   View, 
@@ -34,7 +34,7 @@ import { GOOGLE_MAP_STYLE } from "../components/DisasterMap/MapStyle";
 import { AppMode, DisasterCard, Location, UserTasks } from "../commons/UserMap";
 import { DisasterCardDetail } from "../components/DisasterMap/DisasterCardDetail";
 import { MapSearchBar } from "../components/DisasterMap/MapSearchBar";
-import { CurrentLocationBtn, fetchDisasters, Message } from "../components/DisasterMap/MapUtils";
+import { CurrentLocationBtn, fetchDisasters, MapTypeBtn, Message, ViewIn3DBtn } from "../components/DisasterMap/MapUtils";
 
 // User Tasks
 //@ts-ignore
@@ -68,12 +68,16 @@ const NativeMapView = () => {
   const DEFAULT_ZOOM_LEVEL = 10;
   const MIN_ZOOM_LEVEL = 0;
   const MAX_ZOOM_LEVEL = 19;
+  const mapTypes = ["standard" ,"satellite", "terrain"];
   const [latDelta] = useState(LATITUDE_DELTA);
   const [lngDelta] = useState(LONGITUDE_DELTA);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM_LEVEL);
   const [disasterCards, setDisasterCards] = useState([] as DisasterCard[]);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [selectedDisasterCard, setSelectedDisasterCard] = useState({} as DisasterCard);
+  const [mapType, setMapType] = useState(mapTypes[0] as MapTypes);
+  const [mapTypeIndex, setMapTypeIndex] = useState(1);
+
 
   // App states
   const appState = useRef(AppState.currentState);
@@ -108,6 +112,32 @@ const NativeMapView = () => {
         longitudeDelta: lngDelta + zoom
       });
     }
+  };
+
+  const toggleTo3D = async (_latLng: Location) => {
+    console.log(_latLng)
+    if (mapRef && mapRef.current) {
+      //@ts-ignore
+      const camera = await mapRef.current.getCamera();
+      camera.heading = 40;
+      camera.pitch = 10;
+      camera.altitude = 1000;
+      camera.center.latitude = _latLng.latitude;
+      camera.center.longitude = _latLng.longitude;
+      mapRef.current.animateCamera(camera, { duration: 2000 });
+    }
+  };
+
+  const toggleMapType = () => {
+    if (mapTypeIndex == mapTypes.length - 1) {
+      setMapTypeIndex(0);
+    } else {
+      setMapTypeIndex(mapTypeIndex + 1);
+    }
+
+    setTimeout(() => {
+      setMapType(mapTypes[mapTypeIndex] as MapTypes);
+    }, 200);
   };
 
   useEffect(() => {
@@ -183,6 +213,7 @@ const NativeMapView = () => {
             //@ts-ignore
             mapRef.current = ref;
           }}
+          mapType={mapType}
           style={styles.map} 
           provider={PROVIDER_GOOGLE} 
           initialRegion={{
@@ -246,7 +277,9 @@ const NativeMapView = () => {
             } as Location)
           }}
         />
-        <MapSearchBar data={disasterCards} navigateOnMap={(latLng: Location) => moveMapToCoordinate(latLng)} />
+        <MapSearchBar data={disasterCards} navigateOnMap={(_latLng: Location) => moveMapToCoordinate(_latLng)} setSelectedDisasterCard={(d: DisasterCard) => setSelectedDisasterCard(d)} />
+        <MapTypeBtn toggleHandler={() => toggleMapType()} />
+        <ViewIn3DBtn toggleHandler={() => toggleTo3D(Object.keys(selectedDisasterCard).length > 0 ? selectedDisasterCard.latLng : latLng)} />
         <CurrentLocationBtn 
           moveToMyLocation={() => { 
             moveMapToCoordinate(latLng);

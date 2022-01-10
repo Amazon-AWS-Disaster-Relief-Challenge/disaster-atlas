@@ -1,4 +1,4 @@
-import { Text, View, TouchableWithoutFeedback } from "react-native";
+import { Text, View, TouchableWithoutFeedback, TouchableHighlight } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons'; 
 import { AssetPaths, Disaster, DisasterCard, Location, XmlAttributeMap } from "../../commons/UserMap";
 
@@ -21,7 +21,7 @@ export const Message = (props: { msg: string }) => {
   
 export const CurrentLocationBtn = (props: { moveToMyLocation: () => void }) => {
     return (
-        <TouchableWithoutFeedback onPress={() => props.moveToMyLocation()}>
+        <TouchableHighlight onPress={() => props.moveToMyLocation()}>
             <View style={{
                 position: 'absolute',
                 bottom: 40,
@@ -36,9 +36,52 @@ export const CurrentLocationBtn = (props: { moveToMyLocation: () => void }) => {
             }}>
                 <MaterialIcons name="my-location" size={24} color="black" style={{ alignSelf: 'center' }} />
             </View>
-        </TouchableWithoutFeedback>
+        </TouchableHighlight>
     );
 };
+
+export const ViewIn3DBtn = (props: { toggleHandler: () => void }) => {
+    return (
+        <TouchableHighlight onPress={() => props.toggleHandler()}>
+            <View style={{
+                position: 'absolute',
+                bottom: 120,
+                right: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF'
+            }}>
+                <MaterialIcons name="3d-rotation" size={24} color="black" style={{ alignSelf: 'center' }} />
+            </View>
+        </TouchableHighlight>
+    );
+};
+
+export const MapTypeBtn = (props: { toggleHandler: () => void }) => {
+    return (
+        <TouchableHighlight onPress={() => props.toggleHandler()}>
+            <View style={{
+                position: 'absolute',
+                bottom: 200,
+                right: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF'
+            }}>
+                <MaterialIcons name="terrain" size={24} color="black" style={{ alignSelf: 'center' }} />
+            </View>
+        </TouchableHighlight>
+    );
+};
+
 
 // Map API related...
 // es6 import not supported for this xml parser
