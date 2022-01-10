@@ -68,7 +68,9 @@ const AssetPaths = {
     [Disaster.AVALANCHE]: require('../../assets/avalanche.png'),
     [Disaster.DROUGHT]: require('../../assets/drought.png'),
     [Disaster.LANDSLIDE]: require('../../assets/landslide.png'),
-    [Disaster.FALLBACK]: require('../../assets/burger.png')
+    [Disaster.FALLBACK]: require('../../assets/burger.png'),
+    ASSEMBLE: require('../../assets/assemble.png'),
+    ASSEMBLE_DARK: require('../../assets/assemble-dark.png')
 };
 
 enum UserTasks {

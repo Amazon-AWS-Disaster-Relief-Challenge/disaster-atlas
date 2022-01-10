@@ -1,4 +1,6 @@
-import { Text, View, TouchableWithoutFeedback, TouchableHighlight } from "react-native";
+import { Key } from "react";
+import { Text, View, TouchableHighlight, Image, ImageBackground } from "react-native";
+import { LatLng, MapEvent, Marker } from "react-native-maps";
 import { MaterialIcons } from '@expo/vector-icons'; 
 import { AssetPaths, Disaster, DisasterCard, Location, XmlAttributeMap } from "../../commons/UserMap";
 
@@ -82,6 +84,72 @@ export const MapTypeBtn = (props: { toggleHandler: () => void }) => {
     );
 };
 
+export const DirectionBtn = (props: { toggleHandler: () => void }) => {
+    return (
+        <TouchableHighlight onPress={() => props.toggleHandler()}>
+            <View style={{
+                position: 'absolute',
+                bottom: 280,
+                right: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF'
+            }}>
+                <MaterialIcons name="directions" size={24} color="black" style={{ alignSelf: 'center' }} />
+            </View>
+        </TouchableHighlight>
+    );
+};
+
+export const AddAssemblyPointMarker = (props: { clickHandler: () => void }) => {
+    return (
+        <TouchableHighlight onPress={() => props.clickHandler()}>
+            <View style={{
+                position: 'absolute',
+                bottom: 80,
+                left: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF'
+            }}>
+                <Image source={AssetPaths.ASSEMBLE_DARK} style={{ alignSelf: 'center', width: 24, height: 24 }} />
+            </View>
+        </TouchableHighlight>
+    );
+};
+
+export const AssemblyPointMarker = (props: { uuid: string, location: Location, setDestination: (_latLng: Location) => void }) => {
+    const assignDestination = (e: MapEvent<{}>) => {
+        const latLng: LatLng = e.nativeEvent.coordinate;
+        props.setDestination({
+            latitude: latLng.latitude,
+            longitude: latLng.longitude
+        } as Location);
+    };
+    return (
+        <Marker 
+            key={props.uuid}
+            draggable={true}
+            coordinate={{ latitude: props.location.latitude, longitude: props.location.longitude }}
+            onDragEnd={e => assignDestination(e)}
+            onPress={e => assignDestination(e)}
+        >
+            <ImageBackground source={AssetPaths.ASSEMBLE} style={{ width: 25, height: 25 }}>
+                <Text style={{ width: 0, height: 0 }}>{Math.random()}</Text>
+            </ImageBackground>
+        </Marker>
+    );
+};
+//<MaterialIcons name="directions" size={24} color="black" />
+
 
 // Map API related...
 // es6 import not supported for this xml parser
@@ -121,7 +189,6 @@ export const fetchDisasters = async () => {
             }
           }
 
-          //setDisasterCards(disasterCards);
           return disasterCards;
       })
       .catch((error) => {
