@@ -1,4 +1,3 @@
-import { Key } from "react";
 import { Text, View, TouchableHighlight, Image, ImageBackground } from "react-native";
 import { LatLng, MapEvent, Marker } from "react-native-maps";
 import { MaterialIcons } from '@expo/vector-icons'; 
@@ -126,6 +125,27 @@ export const AddAssemblyPointMarker = (props: { clickHandler: () => void }) => {
     );
 };
 
+export const AddWaypointMarker = (props: { clickHandler: () => void }) => {
+    return (
+        <TouchableHighlight onPress={() => props.clickHandler()}>
+            <View style={{
+                position: 'absolute',
+                bottom: 160,
+                left: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF'
+            }}>
+                <Image source={AssetPaths.WAYPOINT} style={{ alignSelf: 'center', width: 24, height: 24 }} />
+            </View>
+        </TouchableHighlight>
+    );
+};
+
 export const AssemblyPointMarker = (props: { uuid: string, location: Location, setDestination: (_latLng: Location) => void }) => {
     const assignDestination = (e: MapEvent<{}>) => {
         const latLng: LatLng = e.nativeEvent.coordinate;
@@ -148,8 +168,6 @@ export const AssemblyPointMarker = (props: { uuid: string, location: Location, s
         </Marker>
     );
 };
-//<MaterialIcons name="directions" size={24} color="black" />
-
 
 // Map API related...
 // es6 import not supported for this xml parser

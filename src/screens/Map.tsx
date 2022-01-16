@@ -13,8 +13,13 @@ import {
   AppStateStatus, 
   ImageBackground,
 } from "react-native";
-import MapView, { PROVIDER_GOOGLE, Marker, MapTypes, Camera } from "react-native-maps";
-import MapViewDirections from 'react-native-maps-directions';
+import MapView, { 
+  PROVIDER_GOOGLE, 
+  Marker, 
+  MapTypes, 
+  Camera 
+} from "react-native-maps";
+import MapViewDirections, { MapViewDirectionsWaypoints } from 'react-native-maps-directions';
 import { 
   requestForegroundPermissionsAsync, 
   getCurrentPositionAsync, 
@@ -30,12 +35,23 @@ import {
 } from "expo-location";
 import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
+import { computeDestinationPoint } from 'geolib';
 
 import { GOOGLE_MAP_STYLE } from "../components/DisasterMap/MapStyle"; 
 import { AppMode, DisasterCard, Location, UserTasks } from "../commons/UserMap";
 import { DisasterCardDetail } from "../components/DisasterMap/DisasterCardDetail";
 import { MapSearchBar } from "../components/DisasterMap/MapSearchBar";
-import { AssemblyPointMarker, AddAssemblyPointMarker, CurrentLocationBtn, fetchDisasters, MapTypeBtn, Message, ViewIn3DBtn, DirectionBtn } from "../components/DisasterMap/MapUtils";
+import { 
+  AssemblyPointMarker, 
+  AddAssemblyPointMarker, 
+  CurrentLocationBtn, 
+  fetchDisasters, 
+  MapTypeBtn, 
+  Message, 
+  ViewIn3DBtn, 
+  DirectionBtn,
+  AddWaypointMarker,
+} from "../components/DisasterMap/MapUtils";
 
 const config = require('../../app.json'); 
 
@@ -104,6 +120,7 @@ const NativeMapView = () => {
   const [assembleMarkers, setAssembleMarkers] = useState([] as string[]);
   const [destination, setDestination] = useState({} as Location);
   const [showPath, setShowPath] = useState(false);
+  const [waypoint, setWaypoint] = useState({} as MapViewDirectionsWaypoints);
   
   // App states
   const appState = useRef(AppState.currentState);
@@ -172,6 +189,13 @@ const NativeMapView = () => {
     setTimeout(() => {
       setMapType(mapTypes[mapTypeIndex] as MapTypes);
     }, 200);
+  };
+
+  const createSafeWaypoint = () => {
+    setTimeout(() => {
+      const safeWaypoint = computeDestinationPoint(latLng, 15000, -45); // start point -> lat long, distance in meters, bearing degrees
+      setWaypoint(safeWaypoint);
+    }, 1000)
   };
 
   useEffect(() => {
@@ -306,6 +330,8 @@ const NativeMapView = () => {
             <MapViewDirections
               origin={latLng}
               destination={destination}
+              splitWaypoints={true}
+              waypoints={Object.keys(waypoint).length > 0 ? [waypoint] : []}
               apikey={GOOGLE_MAP_KEY}
               strokeWidth={4}
               strokeColor="#ff66cc"
@@ -358,6 +384,13 @@ const NativeMapView = () => {
             setAssembleMarkers([...assembleMarkers, (new Date()).getTime().toString()]);
           }} 
         />
+        {
+          Object.keys(destination).length > 0 && 
+          LOCK_DIRECTIONS_API == false &&
+          <AddWaypointMarker
+            clickHandler={() => createSafeWaypoint()} 
+          />
+        }
     </View>
   );
 };

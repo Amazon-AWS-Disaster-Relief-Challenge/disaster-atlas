@@ -27,7 +27,7 @@
       },
       "config": {
         "googleMapsApiKey": "AIzaSyAyTTyNQ0OqEtRv8JjsaWQ3jxpGSIJBy9k",
-        "lockDirectionsAPI": true
+        "lockDirectionsAPI": false
       }
     },
     "android": {
