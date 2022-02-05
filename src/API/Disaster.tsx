@@ -86,6 +86,8 @@ export const fetchSafeWaypoints = async () => {
 
 const paths = require('./paths1.json');
 
+// INFO: Mercator projection uncommented code works much better
+// Hence, commenting this out
 // const fromPointToLatLng = (x: number, y: number, lat: number, lng: number) => {
 //   const tileSize = 500;
 //   const size = {
@@ -104,7 +106,7 @@ const paths = require('./paths1.json');
 // https://help.openstreetmap.org/questions/75611/transform-xy-pixel-values-into-lat-and-long
 // https://en.wikipedia.org/wiki/Web_Mercator_projection
 
-const tileSize = 400;
+const tileSize = 400; // 400 tile size from google maps equals 500 tile size in map box
 const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0;
 const radians_to_degrees = (rad: number) => (rad * 180.0) / Math.PI;
 

@@ -171,7 +171,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#89CFF0" // #F9F9F9 - lakes original - #000000
+          "color": "#e7e7e7" // #F9F9F9 - lakes original - #000000, #89CFF0
         }
       ]
     },
@@ -180,7 +180,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "labels.text.fill",
       "stylers": [
         {
-          "color": "#89CFF0"// #F9F9F9 - lakes original - #3d3d3d
+          "color": "#e7e7e7"// #F9F9F9 - lakes original - #3d3d3d, #89CFF0
         }
       ]
     }

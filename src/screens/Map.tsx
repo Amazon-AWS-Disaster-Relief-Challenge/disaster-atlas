@@ -64,6 +64,7 @@ export default function Map() {
 
 const NativeMapView = () => {
   // Constants
+  const DISASTER_ICON_SIZE = 25;
   const { width, height } = Dimensions.get('window');
   const ASPECT_RATIO = width / height;
   const LATITUDE_DELTA = 0.003;  
@@ -309,7 +310,7 @@ const NativeMapView = () => {
                   moveMapToCoordinate();
                 }}
               >
-                <ImageBackground source={disasterCard.assetUrl} style={{ width: 25, height: 25 }}>
+                <ImageBackground source={disasterCard.assetUrl} style={{ width: DISASTER_ICON_SIZE, height: DISASTER_ICON_SIZE }}>
                     <Text style={{ width: 0, height: 0 }}>{Math.random()}</Text>
                 </ImageBackground>
               </Marker>
