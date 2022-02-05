@@ -1,9 +1,9 @@
-interface Location {
+export interface Location {
     latitude: number,
     longitude: number,
 };
 
-interface DisasterCard {
+export interface DisasterCard {
     uuid: string,
     latLng: Location,
     severity: Severity,
@@ -15,7 +15,7 @@ interface DisasterCard {
     assetUrl: any
 };
 
-const XmlAttributeMap = {
+export const XmlAttributeMap = {
     uuid: 'uuid',
     latitude: 'latitude',
     longitude: 'longitude',
@@ -27,12 +27,12 @@ const XmlAttributeMap = {
     description: 'description'
 };
 
-enum AppMode {
+export enum AppMode {
     ACTIVE="active",
     INACTIVE="inactive"
 };
 
-enum Disaster {
+export enum Disaster {
     FLOOD="FLOOD",
     WILDFIRE="WILDFIRE",
     WINTERSTORM="WINTERSTORM",
@@ -48,14 +48,14 @@ enum Disaster {
     FALLBACK="FALLBACK"
 };
 
-enum Severity {
+export enum Severity {
     WARNING="WARNING",
     INFORMATION="INFORMATION",
     WATCH="WATCH",
     ADVISORY="ADVISORY"
 };
 
-const AssetPaths = {
+export const AssetPaths = {
     [Disaster.FLOOD]: require('../../assets/flood.png'),
     [Disaster.WILDFIRE]: require('../../assets/wildfire.png'),
     [Disaster.WINTERSTORM]: require('../../assets/winterstorm.png'),
@@ -74,17 +74,6 @@ const AssetPaths = {
     WAYPOINT: require('../../assets/waypoint.png'),
 };
 
-enum UserTasks {
+export enum UserTasks {
     LOCATION_GEO_FENCE="LOCATION_GEO_FENCE"
-};
-
-export {
-    Location,
-    DisasterCard,
-    XmlAttributeMap,
-    AppMode,
-    Disaster,
-    Severity,
-    AssetPaths,
-    UserTasks
 };

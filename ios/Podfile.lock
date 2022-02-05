@@ -6,11 +6,11 @@ PODS:
   - EXBackgroundFetch (10.1.0):
     - ExpoModulesCore
     - UMTaskManagerInterface
-  - EXConstants (13.0.0):
+  - EXConstants (13.0.1):
     - ExpoModulesCore
   - EXErrorRecovery (3.0.4):
     - ExpoModulesCore
-  - EXFileSystem (13.1.0):
+  - EXFileSystem (13.1.2):
     - ExpoModulesCore
   - EXFont (10.0.4):
     - ExpoModulesCore
@@ -19,9 +19,9 @@ PODS:
   - EXLocation (14.0.1):
     - ExpoModulesCore
     - UMTaskManagerInterface
-  - Expo (44.0.3):
+  - Expo (44.0.5):
     - ExpoModulesCore
-  - ExpoModulesCore (0.6.3):
+  - ExpoModulesCore (0.6.4):
     - React-Core
     - ReactCommon/turbomodule/core
   - EXSensors (11.1.0):
@@ -29,10 +29,6 @@ PODS:
   - EXSplashScreen (0.14.1):
     - ExpoModulesCore
     - React-Core
-  - EXTaskManager (10.1.0):
-    - ExpoModulesCore
-    - UMAppLoader
-    - UMTaskManagerInterface
   - FBLazyVector (0.64.3)
   - FBReactNativeSpec (0.64.3):
     - RCT-Folly (= 2020.01.13.00)
@@ -332,9 +328,7 @@ PODS:
     - React-cxxreact (= 0.64.3)
     - React-jsi (= 0.64.3)
     - React-perflogger (= 0.64.3)
-  - RNAWSCognito (5.2.3):
-    - React-Core
-  - RNCAsyncStorage (1.15.14):
+  - RNCAsyncStorage (1.15.16):
     - React-Core
   - RNCPicker (2.2.1):
     - React-Core
@@ -357,7 +351,6 @@ DEPENDENCIES:
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - EXSensors (from `../node_modules/expo-sensors/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
-  - EXTaskManager (from `../node_modules/expo-task-manager/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
@@ -391,7 +384,6 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNAWSCognito (from `../node_modules/amazon-cognito-identity-js`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
@@ -431,8 +423,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-sensors/ios"
   EXSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
-  EXTaskManager:
-    :path: "../node_modules/expo-task-manager/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
@@ -495,8 +485,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/runtimeexecutor"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNAWSCognito:
-    :path: "../node_modules/amazon-cognito-identity-js"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCPicker:
@@ -511,19 +499,18 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
-  EXApplication: bdc8dc27713235565da1029a34385229f31b8e08
+  EXApplication: 2b8f4d665e050ecddffcfb1ce258b7216b6b7777
   EXBackgroundFetch: 12e8a8c522a2d2c5be07168d74af76567841f023
-  EXConstants: 5d18484e38e8eacef7695a82214b6ac90133dedf
-  EXErrorRecovery: deea88a01d38f8b1c1181b4e1d179b0ba0e4bb5b
-  EXFileSystem: 7d1309ba6b38b82ef7fc9e80174de3f9184ac8b4
-  EXFont: 1fb13af43dc517c01c0ff21a6e32f9f9bf2ea602
-  EXKeepAwake: b571c2ad8323b2fced6e907766e2549f75119471
+  EXConstants: ef3ba088036b78e4bbc5e227e2933c618d30b9e9
+  EXErrorRecovery: 9e481432a9ba7220832340911028892b49682a89
+  EXFileSystem: 1777b3ed5697db2a80636a44bf06178ab773ef6b
+  EXFont: e0a7f501df6e833398dfd4b075a022370e215236
+  EXKeepAwake: e190d9ee4550bcf5f8a46bdb199735f542795ebb
   EXLocation: 4bc1ea8086bc296aaba63d16bd194b0995c61cd4
-  Expo: 5f9812539b12998a813315ea8036971c9b56a9e7
-  ExpoModulesCore: d04e519b3e8e21523b195bb21a40144e30f1e163
+  Expo: 337c72b7e9314e93023af79c875930db8e008275
+  ExpoModulesCore: 3a7259bd137b8de6a164952d8a872034f430211b
   EXSensors: 7cb3fc7b9dd8458787ff8b5b849f318fc357393f
   EXSplashScreen: 7872675b95bb07c25f922b3d3dfae70c76fb5a00
-  EXTaskManager: 53bcb908457ff6282ffb1e31c25c0656e3725161
   FBLazyVector: c71c5917ec0ad2de41d5d06a5855f6d5eda06971
   FBReactNativeSpec: 2d68ca405f570b5a215e688e8dbbcc870dcdb79d
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
@@ -557,11 +544,10 @@ SPEC CHECKSUMS:
   React-RCTVibration: c7f845861e79eae13dc1e8217a3cf47a3945b504
   React-runtimeexecutor: 493d9abb8b23c3f84e19ae221eeba92cadcb70dc
   ReactCommon: 8fea6422328e2fc093e25c9fac67adbcf0f04fb4
-  RNAWSCognito: fd5136ee9e4db912be13a84fa00cd849137e0d3c
-  RNCAsyncStorage: ea6b5c280997b2b32a587793163b1f10e580c4f7
+  RNCAsyncStorage: 6ed7eefcf176fee8cd7039a44ca56f0247a650bb
   RNCPicker: cb57c823d5ce8d2d0b5dfb45ad97b737260dc59e
-  UMAppLoader: 671576daa3fd3017d4879a5f23fc0dd3b36422a8
-  UMTaskManagerInterface: 6f7150f9ec9bc6f2760eeae532a70de71ff951c1
+  UMAppLoader: 1c3273748a340c25809a283a19cc3170ed16d062
+  UMTaskManagerInterface: b7ac2e802954dd284d26fc0ae0e2bf97dad64f7d
   Yoga: e6ecf3fa25af9d4c87e94ad7d5d292eedef49749
 
 PODFILE CHECKSUM: 2066d66b2a0ae19490c4802d72b6e04d827b05a9

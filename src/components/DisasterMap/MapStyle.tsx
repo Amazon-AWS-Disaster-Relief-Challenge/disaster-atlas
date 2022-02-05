@@ -4,7 +4,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#212121"
+          "color": "#232F3E"// "#FFFFFF"
         }
       ]
     },
@@ -37,7 +37,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#757575"
+          "color": "#757575" // landmarks - #232F3E
         }
       ]
     },
@@ -81,7 +81,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#181818"
+          "color": "#313E4E"
         }
       ]
     },
@@ -108,7 +108,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry.fill",
       "stylers": [
         {
-          "color": "#2c2c2c"
+          "color": "#425367"// "#E7E7E7" -roadways, original - 2c2c2c
         }
       ]
     },
@@ -117,7 +117,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "labels.text.fill",
       "stylers": [
         {
-          "color": "#8a8a8a"
+          "color": "#425367"// "#E7E7E7" -roadways, original  - 8a8a8a
         }
       ]
     },
@@ -126,7 +126,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#373737"
+          "color": "#425367"// "#E7E7E7" -roadways, original  - 373737
         }
       ]
     },
@@ -135,7 +135,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#3c3c3c"
+          "color": "#313E4E"// 7E7E7E - dark highways, original - #3c3c3c
         }
       ]
     },
@@ -144,7 +144,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#4e4e4e"
+          "color": "#313E4E"// 7E7E7E - dark highways, original - #4e4e4e
         }
       ]
     },
@@ -153,7 +153,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "labels.text.fill",
       "stylers": [
         {
-          "color": "#616161"
+          "color": "#7E7E7E"// 7E7E7E - dark highways, original - #616161
         }
       ]
     },
@@ -171,7 +171,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "geometry",
       "stylers": [
         {
-          "color": "#000000"
+          "color": "#89CFF0" // #F9F9F9 - lakes original - #000000
         }
       ]
     },
@@ -180,7 +180,7 @@ export const GOOGLE_MAP_STYLE =
       "elementType": "labels.text.fill",
       "stylers": [
         {
-          "color": "#3d3d3d"
+          "color": "#89CFF0"// #F9F9F9 - lakes original - #3d3d3d
         }
       ]
     }

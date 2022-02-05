@@ -17,7 +17,10 @@ import MapView, {
   PROVIDER_GOOGLE, 
   Marker, 
   MapTypes, 
-  Camera 
+  Camera,
+  LatLng,
+  Circle,
+  Geojson
 } from "react-native-maps";
 import MapViewDirections, { MapViewDirectionsWaypoints } from 'react-native-maps-directions';
 import { 
@@ -26,48 +29,28 @@ import {
   watchPositionAsync, 
   LocationAccuracy, 
   LocationSubscription, 
-  GeofencingEventType, 
-  startGeofencingAsync, 
-  LocationRegion,
-  //requestBackgroundPermissionsAsync,
   PermissionStatus,
-  //LocationPermissionResponse
 } from "expo-location";
-import * as TaskManager from 'expo-task-manager';
 import Slider from "@react-native-community/slider";
-import { computeDestinationPoint } from 'geolib';
 
 import { GOOGLE_MAP_STYLE } from "../components/DisasterMap/MapStyle"; 
-import { AppMode, DisasterCard, Location, UserTasks } from "../commons/UserMap";
+import { AppMode, DisasterCard, Location } from "../commons/UserMap";
 import { DisasterCardDetail } from "../components/DisasterMap/DisasterCardDetail";
 import { MapSearchBar } from "../components/DisasterMap/MapSearchBar";
 import { 
   AssemblyPointMarker, 
   AddAssemblyPointMarker, 
   CurrentLocationBtn, 
-  fetchDisasters, 
   MapTypeBtn, 
   Message, 
   ViewIn3DBtn, 
   DirectionBtn,
   AddWaypointMarker,
+  AnalyzeMapBtn,
 } from "../components/DisasterMap/MapUtils";
+import { fetchDisasters, fetchSafeWaypoints, fetchOverlayPaths } from "../API/Disaster";
 
 const config = require('../../app.json'); 
-
-// User Tasks
-//@ts-ignore
-TaskManager.defineTask(UserTasks.LOCATION_GEO_FENCE, ({ data: { eventType, region }, error }) => {
-  if (error) {
-    // check `error.message` for more details.
-    return;
-  }
-  if (eventType === GeofencingEventType.Enter) {
-    console.log("You've entered region:", region);
-  } else if (eventType === GeofencingEventType.Exit) {
-    console.log("You've left region:", region);
-  }
-});
 
 export default function Map() {
   return (
@@ -120,7 +103,8 @@ const NativeMapView = () => {
   const [assembleMarkers, setAssembleMarkers] = useState([] as string[]);
   const [destination, setDestination] = useState({} as Location);
   const [showPath, setShowPath] = useState(false);
-  const [waypoint, setWaypoint] = useState({} as MapViewDirectionsWaypoints);
+  const [waypoints, setWaypoints] = useState([] as MapViewDirectionsWaypoints[]);
+  const [overlayPaths, setOverlayPaths] = useState([] as any[]);
   
   // App states
   const appState = useRef(AppState.currentState);
@@ -129,6 +113,7 @@ const NativeMapView = () => {
   const DISTANCE_INTERVAL = 5;
   const [latLng, setLatLng] = useState({} as Location);
   const mapRef = useRef({} as MapView);
+  const disasterCirleRef = useRef([] as any[]);
 
   const isAppForeground = (nextAppState: AppStateStatus) => {
     return appState.current.match(/inactive|background/) && nextAppState === AppMode.ACTIVE;
@@ -193,9 +178,22 @@ const NativeMapView = () => {
 
   const createSafeWaypoint = () => {
     setTimeout(() => {
-      const safeWaypoint = computeDestinationPoint(latLng, 15000, -45); // start point -> lat long, distance in meters, bearing degrees
-      setWaypoint(safeWaypoint);
-    }, 1000)
+      fetchSafeWaypoints()
+      .then(safewaypoints => {
+        setWaypoints(safewaypoints);
+      })
+      .catch(error => console.log(`safewaypoints fetch error - ${error}`));
+    }, 1000);
+  };
+
+  const createOverlayPaths = () => {
+    setTimeout(() => {
+      fetchOverlayPaths(47.60396, -122.1318)
+      .then(overlayPaths => {
+        setOverlayPaths(overlayPaths);
+      })
+      .catch(error => console.log(`overlayPaths fetch error - ${error}`));
+    }, 1000);
   };
 
   useEffect(() => {
@@ -214,19 +212,12 @@ const NativeMapView = () => {
       });
     };
 
-    const beginUserTasks = async () => {
-      startGeofencingAsync(UserTasks.LOCATION_GEO_FENCE, [{
-        latitude: latLng.latitude,
-        longitude: latLng.longitude,
-        radius: 10
-      } as LocationRegion] as LocationRegion[]);
-    };
+    const beginUserTasks = async () => {};
 
     const init = async () => {
       try {
         // Ask Permissions
         const fgLocationPermissionResponse = await requestForegroundPermissionsAsync();
-        // const bgLocationPermissionResponse = await requestBackgroundPermissionsAsync();
         if (fgLocationPermissionResponse.status == PermissionStatus.GRANTED) {
           setHasPermissions(true);
           watchCurrentPosition();
@@ -271,6 +262,18 @@ const NativeMapView = () => {
             //@ts-ignore
             mapRef.current = ref;
           }}
+          onMapReady={() => {
+            setTimeout(() => {
+              // Draw geo fence around disasters
+              disasterCirleRef.current.forEach(ref => {
+                ref.setNativeProps({
+                  fillColor: 'rgba(255, 153, 0, 0.4)',
+                  strokeColor: 'rgba(255, 153, 0, 0.4)'
+                });
+              });
+            }, 1000);
+          }}
+          onUserLocationChange={() => {}}
           mapType={mapType}
           style={styles.map} 
           provider={PROVIDER_GOOGLE} 
@@ -289,17 +292,17 @@ const NativeMapView = () => {
           showsPointsOfInterest={true}
           showsCompass={true}
           showsScale={true}
-          showsBuildings={true}
-          showsTraffic={true}
-          showsIndoors={true}
-          showsIndoorLevelPicker={true}
+          showsBuildings={false}
+          showsTraffic={false}
+          showsIndoors={false}
+          showsIndoorLevelPicker={false}
           customMapStyle={GOOGLE_MAP_STYLE}
         >
           {
             disasterCards && disasterCards.length > 0 &&
-            disasterCards.map((disasterCard, key) => 
+            disasterCards.map((disasterCard, key) => (
               <Marker 
-                key={key} 
+                key={`disaster-marker-${key}`} 
                 coordinate={{ latitude: disasterCard.latLng.latitude, longitude: disasterCard.latLng.longitude }}
                 onPress={() => {
                   setSelectedDisasterCard(disasterCard);
@@ -310,7 +313,21 @@ const NativeMapView = () => {
                     <Text style={{ width: 0, height: 0 }}>{Math.random()}</Text>
                 </ImageBackground>
               </Marker>
-            )
+            ))
+          }
+          {
+            disasterCards && disasterCards.length > 0 &&
+            disasterCards.map((disasterCard, key) => (
+              <Circle
+                //@ts-ignore
+                ref={ref => (disasterCirleRef.current[key] = ref)}
+                key={`disaster-radius-${key}`}
+                center={disasterCard.latLng as LatLng}
+                radius={1000}
+                strokeWidth={5}
+                zIndex={5}
+              />
+            ))
           }
           { 
             assembleMarkers && assembleMarkers.length > 0 && 
@@ -331,10 +348,33 @@ const NativeMapView = () => {
               origin={latLng}
               destination={destination}
               splitWaypoints={true}
-              waypoints={Object.keys(waypoint).length > 0 ? [waypoint] : []}
+              waypoints={waypoints.length > 0 ? waypoints : []}
               apikey={GOOGLE_MAP_KEY}
               strokeWidth={4}
               strokeColor="#ff66cc"
+            />
+          }
+          {
+            overlayPaths.length > 0 &&
+            <Geojson 
+              key={99}
+              zIndex={10}
+              strokeColor="red"
+              fillColor="green"
+              strokeWidth={2}
+              geojson={{
+                "type": "FeatureCollection",
+                "features": [
+                  {
+                    "type": "Feature",
+                    "geometry": {
+                      "type": "MultiLineString",
+                      "coordinates": overlayPaths
+                    },
+                    "properties": {}
+                  }
+                ]
+              }}
             />
           }
         </MapView>
@@ -353,7 +393,8 @@ const NativeMapView = () => {
           maximumTrackTintColor="#FFFFFF"
           onValueChange={value => {
             setZoom(value);
-            moveMapToCoordinate()
+            moveMapToCoordinate();
+            createOverlayPaths();
           }}
         />
         <MapSearchBar 
@@ -389,6 +430,13 @@ const NativeMapView = () => {
           LOCK_DIRECTIONS_API == false &&
           <AddWaypointMarker
             clickHandler={() => createSafeWaypoint()} 
+          />
+        }
+        {
+          <AnalyzeMapBtn 
+            clickHandler={() => {
+              createOverlayPaths();
+            }} 
           />
         }
     </View>

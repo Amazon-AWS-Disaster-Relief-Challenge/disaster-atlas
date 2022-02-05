@@ -26,7 +26,7 @@ export const DisasterCardDetail = (props: { toastData: DisasterCard }) => {
 
     const animation = 'slideInUp';
     const animationBtn = 'fadeInDown';
-    const durations = [200, 400, 600, 800, 1000];
+    const durations = [200, 400, 600, 800, 1000, 1200];
     const easing = 'ease-in-out';
 
     useEffect(() => {
@@ -38,6 +38,8 @@ export const DisasterCardDetail = (props: { toastData: DisasterCard }) => {
         });
         closeBtnRef.current && closeBtnRef.current.fadeInDown();
     }, [props.toastData]);
+
+    console.log(`Geolocation: ${props.toastData.latLng.latitude}, ${props.toastData.latLng.longitude}`);
 
     return (
         <>
@@ -52,8 +54,9 @@ export const DisasterCardDetail = (props: { toastData: DisasterCard }) => {
                     <Animatable.Text ref={el => (textRefs.current[0] = el)} animation={animation} duration={durations[0]} easing={easing} style={styles.title}>{props.toastData.disaster}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[1] = el)} animation={animation} duration={durations[1]} easing={easing} style={{...styles.severity, color: color}}>{`[${props.toastData.severity}]`}</Animatable.Text>
                     <Animatable.Text ref={el => (textRefs.current[2] = el)} animation={animation} duration={durations[2]} easing={easing} style={styles.hazardName}>{`${props.toastData.hazardName}`}</Animatable.Text>
-                    <Animatable.Text ref={el => (textRefs.current[3] = el)} animation={animation} duration={durations[3]} easing={easing} style={styles.descriptionAndTime}>{`Last updated: ${lastUpdatedTime}`}</Animatable.Text>
-                    <Animatable.Text ref={el => (textRefs.current[4] = el)} animation={animation} duration={durations[4]} easing={easing} style={styles.descriptionAndTime1}>{props.toastData.description}</Animatable.Text>
+                    <Animatable.Text ref={el => (textRefs.current[3] = el)} animation={animation} duration={durations[3]} easing={easing} style={styles.geoLocation}>{`Geolocation: ${props.toastData.latLng.latitude}, ${props.toastData.latLng.longitude}`}</Animatable.Text>
+                    <Animatable.Text ref={el => (textRefs.current[4] = el)} animation={animation} duration={durations[4]} easing={easing} style={styles.descriptionAndTime}>{`Last updated: ${lastUpdatedTime}`}</Animatable.Text>
+                    <Animatable.Text ref={el => (textRefs.current[5] = el)} animation={animation} duration={durations[5]} easing={easing} style={styles.descriptionAndTime1}>{props.toastData.description}</Animatable.Text>
                 </ScrollView>
             }
         </>
@@ -94,6 +97,14 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         textAlign: 'center',
         padding: 8
+    },
+    geoLocation: {
+        fontSize: 12,
+        color: '#FFFFFF',
+        textAlign: 'left',
+        padding: 5,
+        lineHeight: 18,
+        fontWeight: 'bold'
     },
     descriptionAndTime: {
         fontSize: 12,
