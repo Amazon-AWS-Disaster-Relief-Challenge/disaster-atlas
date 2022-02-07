@@ -9,6 +9,11 @@ const parser = new XMLParser();
 // Disaster Alert API
 const DISASTER_ALERT_PUBLIC_URL = "https://hpxml.pdc.org/public.xml";
 
+// Python endpoint API
+// Locally hosted
+// TODO: replace with production
+const PY_ENDPOINT_API = "http://0.0.0.0:5001/";
+
 export const fetchDisasters = async () => {
     const fetchPromise = (): Promise<DisasterCard[]> => {
       return fetch(DISASTER_ALERT_PUBLIC_URL)
@@ -61,20 +66,20 @@ const mockDisasterCard = {
       longitude: -122.134499
     } as Location,
     severity: "WARNING",
-    disaster: "FLOOD",
+    disaster: "WINTERSTORM",
     hazardId: "166688",
-    hazardName: "Floods -  Richardson, Texas, USA",
+    hazardName: "Winterstorm -  Bellevue, Washington, USA",
     lastUpdate: "2022-01-03T06:01:00-10:00",
-    description: "Floods have been reported in parts of Richardson, Texas, USA. Reports indicate that at least 11,637 people have been affected and at least 3,425 houses have been damaged.",
-    assetUrl: AssetPaths[Disaster.FLOOD],
+    description: "Winterstorm have been reported in parts of Bellevue, Washington, USA. Reports indicate that at least 11,637 people have been affected and at least 3,425 houses have been damaged.",
+    assetUrl: AssetPaths[Disaster.WINTERSTORM],
 } as unknown as DisasterCard;
 
 export const fetchSafeWaypoints = async () => {
     const fetchPromise = (): Promise<Location[]> => {
         return new Promise(resolve => {
             const safeWaypointList = [{
-                latitude: 47.601214,
-                longitude: -122.120,
+                latitude: 47.609853,
+                longitude: -122.143065,
             }] as Location[];
             resolve(safeWaypointList);
         });
@@ -83,8 +88,6 @@ export const fetchSafeWaypoints = async () => {
     const safeWaypointsList: Location[] = await fetchPromise();
     return safeWaypointsList;
 }
-
-const paths = require('./paths1.json');
 
 // INFO: Mercator projection uncommented code works much better
 // Hence, commenting this out
@@ -135,20 +138,33 @@ const xy2LatLon = (pxX_internal: number, pxY_internal: number, lat_center: numbe
   return [lon_Point, lat_Point];
 }
 
-export const fetchOverlayPaths = async (lat: number, lng: number) => {
-  const fetchPromise = (): Promise<any[]> => {
+export const fetchOverlayPaths = async (lat: number, lng: number, isTest: boolean) => {
+  const parseOutput = (paths: any[]) => {
+    paths.map((path: any) => {
+      path[0] = xy2LatLon(Math.round(path[0][1] * 1000000) / 1000000, Math.round(path[0][0] * 1000000) / 1000000, lat, lng);
+      path[1] = xy2LatLon(Math.round(path[1][1] * 1000000) / 1000000, Math.round(path[1][0] * 1000000) / 1000000, lat, lng);
+      path.splice(-1);
+      return path;
+    });
+    return paths;
+  };
+
+  const fetchPromiseTest = (): Promise<any[]> => {
       return new Promise(resolve => {
-          paths.map((path: any) => {
-            path[0] = xy2LatLon(Math.round(path[0][1] * 1000000) / 1000000, Math.round(path[0][0] * 1000000) / 1000000, lat, lng);
-            path[1] = xy2LatLon(Math.round(path[1][1] * 1000000) / 1000000, Math.round(path[1][0] * 1000000) / 1000000, lat, lng);
-            path.splice(-1);
-            return path;
-          });
-          resolve(paths);
+          resolve(parseOutput(require('./paths1.json')));
       });
   };
+
+  const fetchOverlayPathsFromAPI = () => {
+    return fetch(PY_ENDPOINT_API + "?" + "lat=" + lat + "&lon=" + lng)
+    .then((response) => response.json())
+    .catch((error) => {
+        console.log(error);
+        return [];
+    });
+  };
   
-  const overlayPathsList = await fetchPromise();
+  const overlayPathsList = isTest ? await fetchPromiseTest() : await fetchOverlayPathsFromAPI();
   return overlayPathsList;
 }
 

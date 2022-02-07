@@ -64,6 +64,7 @@ export default function Map() {
 
 const NativeMapView = () => {
   // Constants
+  const isTest = true; // TODO: Toggle this after API is hosted.
   const DISASTER_ICON_SIZE = 25;
   const { width, height } = Dimensions.get('window');
   const ASPECT_RATIO = width / height;
@@ -189,7 +190,13 @@ const NativeMapView = () => {
 
   const createOverlayPaths = () => {
     setTimeout(() => {
-      fetchOverlayPaths(47.60396, -122.1318)
+      let _latitude = latLng.latitude;
+      let _longitude = latLng.longitude;
+      if (isTest) {
+        _latitude = 47.60396;
+        _longitude = -122.1318;
+      }
+      fetchOverlayPaths(_latitude, _longitude, isTest)
       .then(overlayPaths => {
         setOverlayPaths(overlayPaths);
       })
